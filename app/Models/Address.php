@@ -20,11 +20,8 @@ class Address extends Model
     ];
 
 
-    public function order(){
+    public function order()
+    {
         return $this->belongsTo(Order::class);
     }
-
-    
-
-
 }

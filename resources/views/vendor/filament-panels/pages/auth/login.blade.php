@@ -107,7 +107,7 @@
             <!-- LEFT -->
             <div class="login-left">
 
-                <div style="margin-bottom:20px; text-align:center;">
+                <div style="margin-bottom:20px; display: flex; justify-content: center; align-items: center">
                     <img src="{{ asset('assets/images/vl-sistemas.png') }}" style="height:56px;">
                 </div>
 
@@ -130,17 +130,46 @@
                     </div>
 
                     <div style="display:flex; justify-content:space-between; font-size:14px; color:#8687a7;">
-                        <label style="display:flex; gap:8px; align-items:center;">
-                            <input type="checkbox" wire:model.defer="data.remember">
-                            lembrar
+                        <label style="display:flex; gap:8px; align-items:center; cursor:pointer;">
+                            <style>
+                                .remember-checkbox {
+                                    appearance: none;
+                                    -webkit-appearance: none;
+                                    width: 18px;
+                                    height: 18px;
+                                    border: 2px solid #ccc;
+                                    border-radius: 50%;
+                                    cursor: pointer;
+                                    transition: all 0.2s ease;
+                                    flex-shrink: 0;
+                                }
+
+                                .remember-checkbox:checked {
+                                    background-color: #f47c20;
+                                    border-color: #f47c20;
+                                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M2 6l3 3 5-5' stroke='white' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+                                    background-repeat: no-repeat;
+                                    background-position: center;
+                                    background-size: 70%;
+                                }
+
+                                .remember-checkbox:hover {
+                                    border-color: #f47c20;
+                                }
+                            </style>
+                            <input type="checkbox" class="remember-checkbox" wire:model.defer="data.remember">
+                            Lembrar de mim
                         </label>
                         <a href="#" style="color:#8687a7; text-decoration:none;">Esqueceu sua senha?</a>
                     </div>
 
-                    <button type="submit"
-                        style="background:#f47c20; border:none; border-radius:30px; padding:12px; color:#fff; font-weight:bold; cursor:pointer;">
-                        ACESSAR
-                    </button>
+                    <div style="display:flex; justify-content:center;">
+                        <button type="submit"
+                            style="background:#f47c20; border:none; border-radius:30px; padding:10px 48px; color:#fff; font-weight:bold; font-size:13px; cursor:pointer; letter-spacing:1px; transition: background 0.2s ease;"
+                            onmouseover="this.style.background='#d96c10'" onmouseout="this.style.background='#f47c20'">
+                            ACESSAR
+                        </button>
+                    </div>
 
                 </form>
 

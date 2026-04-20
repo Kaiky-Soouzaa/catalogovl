@@ -26,6 +26,10 @@ class BrandResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-computer-desktop';
 
+    protected static ?string $recordTitleAttribute = 'name';
+
+    protected static ?int $navigationSort = 2;
+
     protected static ?string $navigationLabel = 'Marcas';
     protected static ?string $modelLabel = 'Marca';
     protected static ?string $pluralModelLabel = 'Marca';
