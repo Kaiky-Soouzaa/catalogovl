@@ -11,18 +11,19 @@ class Product extends Model
 
 
     protected $fillable = [
-        'category_id', 
-        'brand_id', 
+        'category_id',
+        'brand_id',
         'name',
         'slug',
         'images',
         'description',
         'price',
+        'original_price',
         'is_active',
         'is_featured',
         'in_stock',
         'on_sale',
-        ];
+    ];
 
 
     protected $casts = [
@@ -30,19 +31,29 @@ class Product extends Model
 
     ];
 
+    public function getDiscountPercentageAttribute(): int
+    {
+        if (!$this->original_price || $this->original_price <= $this->price) {
+            return 0;
+        }
 
-    public function category() {
+        return (int) round((1 - $this->price / $this->original_price) * 100);
+    }
+
+
+    public function category()
+    {
         return $this->belongsTo(Category::class);
     }
 
-    public function brand() {
+    public function brand()
+    {
         return $this->belongsTo(Brand::class);
     }
 
 
-    public function orderItems() {
+    public function orderItems()
+    {
         return $this->hasMany(Order::class);
     }
-
-
 }

@@ -14,4 +14,4 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get("/", HomePage::class);
+Route::get("/{userId}", HomePage::class);

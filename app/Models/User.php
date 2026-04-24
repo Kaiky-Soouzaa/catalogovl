@@ -23,7 +23,13 @@ class User extends Authenticatable
         'email_verified_at',
         'password',
         'primary_color',
-        'logo_url'
+        'logo_url',
+        'store_name',
+        'whatsapp',
+        'address',
+        'neighborhood',
+        'city',
+        'state',
     ];
 
     /**

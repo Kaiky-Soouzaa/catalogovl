@@ -101,9 +101,15 @@ class ProductResource extends Resource
                         ->required()
                         ->prefix('R$')
                         ->label('Preço')
+                        ->columnSpan(2),
 
 
-
+                    TextInput::make('original_price')
+                        ->numeric()
+                        ->prefix('R$')
+                        ->label('Preço Original (antes do desconto)')
+                        ->helperText('Preencha apenas se o produto estiver em oferta. Ex: preço era R$28,99, agora é R$23,99')
+                        ->columnSpan(2),
 
                 ])->columns(2),
 
@@ -155,6 +161,12 @@ class ProductResource extends Resource
                     ->money('BRL')
                     ->sortable()
                     ->label('Preço'),
+
+                TextColumn::make('original_price')
+                    ->money('BRL')
+                    ->sortable()
+                    ->label('Preço Original'),
+
 
                 IconColumn::make('is_featured')
                     ->boolean()
