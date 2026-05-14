@@ -53,11 +53,8 @@ class OrderResource extends Resource
                 ComponentsGroup::make()->schema([
                     Section::make('Informações do Pedido')
                         ->schema([
-                            Select::make('user_id')
+                            TextInput::make('customer_name')
                                 ->label('Cliente')
-                                ->relationship('user', 'name')
-                                ->searchable()
-                                ->preload()
                                 ->required(),
 
                             Select::make('payment_method')
@@ -121,10 +118,6 @@ class OrderResource extends Resource
                                 ->preload()
                                 ->label('Opção de Entrega'),
 
-                            Textarea::make('notes')
-                                ->columnSpanFull()
-                                ->label('Observações')
-
 
                         ])->columns(2),
 
@@ -155,6 +148,10 @@ class OrderResource extends Resource
                                     ->columnSpan(3)
                                     ->reactive()
                                     ->afterStateUpdated(fn($state, Set $set, Get $get) => $set('total_amount', $state * $get('unit_amount'))),
+
+                                Textarea::make('note')
+                                    ->columnSpan(3)
+                                    ->label('Observações'),
 
                                 TextInput::make('unit_amount')
                                     ->numeric()
@@ -204,7 +201,7 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('user.name')
+                TextColumn::make('customer_name')
                     ->label('Cliente')
                     ->searchable()
                     ->sortable(),

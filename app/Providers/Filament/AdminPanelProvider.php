@@ -7,11 +7,11 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\MenuItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -30,26 +30,56 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->brandLogo(asset('assets/images/vl-sistemas.png'))
             ->brandLogoHeight('3rem')
+
             ->colors([
                 'primary' => Color::Amber,
             ])
+
+
+            ->darkMode(false)
+
+
             ->userMenuItems([
-                'profile' => \Filament\Navigation\MenuItem::make()
+                'profile' => MenuItem::make()
                     ->label('Perfil')
                     ->url(fn() => \App\Filament\Pages\EditProfile::getUrl()),
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+
+
+            ->renderHook(
+                'panels::head.end',
+                fn() => view('filament.hooks.user-menu-direct-profile')
+            )
+
+            ->discoverResources(
+                in: app_path('Filament/Resources'),
+                for: 'App\\Filament\\Resources'
+            )
+
+            ->discoverPages(
+                in: app_path('Filament/Pages'),
+                for: 'App\\Filament\\Pages'
+            )
+
             ->pages([
                 Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+
+            ->discoverWidgets(
+                in: app_path('Filament/Widgets'),
+                for: 'App\\Filament\\Widgets'
+            )
+
             ->widgets([
                 OrderStats::class,
-                // Widgets\AccountWidget::class,
-                // Widgets\FilamentInfoWidget::class,
-
             ])
+
+
+            ->renderHook(
+                'panels::sidebar.footer',
+                fn() => view('filament.components.sidebar-footer')
+            )
+
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -61,6 +91,7 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+
             ->authMiddleware([
                 Authenticate::class,
             ]);

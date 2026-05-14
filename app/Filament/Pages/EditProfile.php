@@ -32,6 +32,12 @@ class EditProfile extends Page implements HasForms
             'email'         => Auth::user()->email,
             'primary_color' => Auth::user()->primary_color,
             'logo_url'      => Auth::user()->logo_url,
+            'store_name'    => Auth::user()->store_name,
+            'whatsapp'      => Auth::user()->whatsapp,
+            'address'       => Auth::user()->address,
+            'neighborhood'  => Auth::user()->neighborhood,
+            'city'          => Auth::user()->city,
+            'state'         => Auth::user()->state,
         ]);
     }
 
@@ -54,6 +60,7 @@ class EditProfile extends Page implements HasForms
                             ->nullable()
                             ->minLength(8),
                     ]),
+
                 Section::make('Identidade visual')
                     ->schema([
                         ColorPicker::make('primary_color')
@@ -64,6 +71,42 @@ class EditProfile extends Page implements HasForms
                             ->disk('public')
                             ->directory('logos'),
                     ]),
+
+                Section::make('Informações da empresa')  // ← nova seção
+                    ->schema([
+                        TextInput::make('store_name')
+                            ->label('Nome da loja')
+                            ->placeholder('Ex: Mercado Parceiro')
+                            ->maxLength(255),
+
+                        TextInput::make('whatsapp')
+                            ->label('WhatsApp (com DDD)')
+                            ->placeholder('Ex: 5562999999999')
+                            ->helperText('Somente números. Ex: 5562999999999')
+                            ->maxLength(20),
+
+                        TextInput::make('address')
+                            ->label('Endereço')
+                            ->placeholder('Ex: Rua Milton Ferreira, 00')
+                            ->maxLength(255)
+                            ->columnSpan(2),
+
+                        TextInput::make('neighborhood')
+                            ->label('Bairro')
+                            ->placeholder('Ex: Centro')
+                            ->maxLength(255),
+
+                        TextInput::make('city')
+                            ->label('Cidade')
+                            ->placeholder('Ex: Ceres')
+                            ->maxLength(255),
+
+                        TextInput::make('state')
+                            ->label('Estado (UF)')
+                            ->placeholder('Ex: GO')
+                            ->maxLength(2)
+                            ->minLength(2),
+                    ])->columns(2),
             ])
             ->statePath('data');
     }
@@ -77,6 +120,12 @@ class EditProfile extends Page implements HasForms
             'email'         => $data['email'],
             'primary_color' => $data['primary_color'],
             'logo_url'      => $data['logo_url'],
+            'store_name'    => $data['store_name'],    // ← novo
+            'whatsapp'      => $data['whatsapp'],      // ← novo
+            'address'       => $data['address'],       // ← novo
+            'neighborhood'  => $data['neighborhood'],  // ← novo
+            'city'          => $data['city'],          // ← novo
+            'state'         => $data['state'],         // ← novo
         ];
 
         if (!empty($data['password'])) {

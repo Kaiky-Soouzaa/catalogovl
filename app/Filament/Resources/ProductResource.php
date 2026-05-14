@@ -96,6 +96,15 @@ class ProductResource extends Resource
                         ->columnSpan(2),
 
 
+                    TextInput::make('barcode')
+                        ->label('Código Produto')
+                        ->maxLength(20)
+                        ->required()
+                        ->unique(ignoreRecord: true)
+                        ->placeholder('Ex: 7891234567890')
+                        ->columnSpan(2),
+
+
                     TextInput::make('price')
                         ->numeric()
                         ->required()
@@ -166,6 +175,9 @@ class ProductResource extends Resource
                     ->money('BRL')
                     ->sortable()
                     ->label('Preço Original'),
+
+                TextColumn::make('barcode')
+                    ->label('Código Produto'),
 
 
                 IconColumn::make('is_featured')

@@ -17,9 +17,12 @@ class LatestOrders extends BaseWidget
 
     protected static ?int $sort = 2;
 
+    protected static ?string $pollingInterval = '2s';
+
     public function table(Table $table): Table
     {
         return $table
+            ->poll('5s')
             ->query(OrderResource::getEloquentQuery())
             ->defaultPaginationPageOption(5)
             ->heading('Últimos Pedidos')

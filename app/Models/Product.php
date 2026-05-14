@@ -23,6 +23,7 @@ class Product extends Model
         'is_featured',
         'in_stock',
         'on_sale',
+        'barcode'
     ];
 
 
