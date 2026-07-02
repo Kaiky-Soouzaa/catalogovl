@@ -29,6 +29,7 @@ class EditProfile extends Page implements HasForms
     {
         $this->form->fill([
             'name'          => Auth::user()->name,
+            'slug'          => Auth::user()->slug,
             'email'         => Auth::user()->email,
             'primary_color' => Auth::user()->primary_color,
             'logo_url'      => Auth::user()->logo_url,
@@ -72,7 +73,7 @@ class EditProfile extends Page implements HasForms
                             ->directory('logos'),
                     ]),
 
-                Section::make('Informações da empresa')  // ← nova seção
+                Section::make('Informações da empresa')
                     ->schema([
                         TextInput::make('store_name')
                             ->label('Nome da loja')
@@ -84,6 +85,18 @@ class EditProfile extends Page implements HasForms
                             ->placeholder('Ex: 5562999999999')
                             ->helperText('Somente números. Ex: 5562999999999')
                             ->maxLength(20),
+
+
+                        TextInput::make('slug')
+                            ->label('Slug da loja (URL)')
+                            ->placeholder('Ex: mercado-parceiro')
+                            ->helperText('Usado na URL da sua loja. Apenas letras minúsculas, números e hífens.')
+                            ->unique('users', 'slug', ignoreRecord: true)
+                            ->rules(['alpha_dash'])
+                            ->maxLength(255)
+                            ->columnSpan(2)
+                            ->required(),
+
 
                         TextInput::make('address')
                             ->label('Endereço')
@@ -117,15 +130,16 @@ class EditProfile extends Page implements HasForms
 
         $update = [
             'name'          => $data['name'],
+            'slug'          => $data['slug'],
             'email'         => $data['email'],
             'primary_color' => $data['primary_color'],
             'logo_url'      => $data['logo_url'],
-            'store_name'    => $data['store_name'],    // ← novo
-            'whatsapp'      => $data['whatsapp'],      // ← novo
-            'address'       => $data['address'],       // ← novo
-            'neighborhood'  => $data['neighborhood'],  // ← novo
-            'city'          => $data['city'],          // ← novo
-            'state'         => $data['state'],         // ← novo
+            'store_name'    => $data['store_name'],
+            'whatsapp'      => $data['whatsapp'],
+            'address'       => $data['address'],
+            'neighborhood'  => $data['neighborhood'],
+            'city'          => $data['city'],
+            'state'         => $data['state'],
         ];
 
         if (!empty($data['password'])) {

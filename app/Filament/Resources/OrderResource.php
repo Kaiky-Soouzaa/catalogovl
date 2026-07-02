@@ -108,7 +108,7 @@ class OrderResource extends Resource
                                     'cancelado' => 'heroicon-m-x-circle'
                                 ]),
 
-                            Select::make('shipping_method')
+                            Select::make('delivery_type')
                                 ->options([
                                     'entrega' => 'Entrega - Receba em seu endereço',
                                     'retirada' => 'Retirada - Retire no estabelecimento'
@@ -204,67 +204,108 @@ class OrderResource extends Resource
                 TextColumn::make('customer_name')
                     ->label('Cliente')
                     ->searchable()
-                    ->sortable(),
-
+                    ->sortable()
+                    ->weight('semibold')
+                    ->limit(28),
 
                 TextColumn::make('grand_total')
                     ->label('Valor Total')
-                    ->numeric()
-                    ->searchable()
+                    ->money('BRL')
                     ->sortable()
-                    ->money('BRL'),
-
+                    ->weight('bold')
+                    ->color('success'),
 
                 TextColumn::make('payment_method')
-                    ->searchable()
-                    ->sortable()
-                    ->label('Método de Pagamento'),
+                    ->label('Método de Pagamento')
+                    ->badge()
+                    ->color('success')
+                    ->formatStateUsing(fn($state) => strtoupper($state)),
 
                 TextColumn::make('payment_status')
-                    ->searchable()
-                    ->sortable()
-                    ->label('Status de Pagamento'),
+                    ->label('Status de Pagamento')
+                    ->badge()
+                    ->color(fn($state) => match ($state) {
+                        'pago' => 'success',
+                        'cancelado' => 'danger',
+                        default => 'warning',
+                    })
+                    ->formatStateUsing(fn($state) => ucfirst($state)),
 
-
-                TextColumn::make('shipping_method')
-                    ->sortable()
-                    ->searchable()
-                    ->label('Opção de Entrega'),
-
-
-
-                SelectColumn::make('status')
-                    ->options([
-                        'novo' => 'Novo',
-                        'em processamento' => 'Em processamento',
-                        'enviado' => 'Enviado',
-                        'entregue' => 'Entregue',
-                        'cancelado' => 'Cancelado'
-                    ])
+                TextColumn::make('delivery_type')
+                    ->label('Tipo de Entrega')
+                    ->badge()
+                    ->icon(
+                        fn($state) => $state === 'retirada'
+                            ? 'heroicon-m-building-storefront'
+                            : 'heroicon-m-truck'
+                    )
+                    ->color(fn($state) => match ($state) {
+                        'retirada' => 'success',   // verde
+                        'entrega' => 'info',       // azul
+                    })
+                    ->formatStateUsing(
+                        fn($state) => $state === 'retirada'
+                            ? 'Retirada na Loja'
+                            : 'Entrega Padrão'
+                    )
                     ->searchable()
                     ->sortable(),
 
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn($state) => match ($state) {
+                        'novo' => 'info',
+                        'em processamento' => 'warning',
+                        'enviado' => 'success',
+                        'entregue' => 'success',
+                        'cancelado' => 'danger',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn($state) => ucfirst($state))
+                    ->sortable(),
+
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Data')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->label('Criado em'),
-
-                TextColumn::make('update_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->label('Atualizado em'),
-
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\Action::make('alterarStatus')
+                        ->label('Alterar Status Pedido')
+                        ->icon('heroicon-m-arrow-path')
+                        ->modalHeading('Alterar status do pedido')
+                        ->modalSubmitActionLabel('Salvar status')
+                        ->form([
+                            \Filament\Forms\Components\Select::make('status')
+                                ->label('Novo status')
+                                ->options([
+                                    'novo' => 'Novo',
+                                    'em processamento' => 'Em processamento',
+                                    'enviado' => 'Enviado',
+                                    'entregue' => 'Entregue',
+                                    'cancelado' => 'Cancelado',
+                                ])
+                                ->required(),
+                        ])
+                        ->fillForm(fn($record) => [
+                            'status' => $record->status,
+                        ])
+                        ->action(function ($record, array $data) {
+                            $record->update([
+                                'status' => $data['status'],
+                            ]);
+                        })
+                        ->successNotificationTitle('Status atualizado com sucesso'),
+
+
                     Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make()
+                    Tables\Actions\DeleteAction::make(),
                 ]),
             ])
             ->bulkActions([

@@ -2,7 +2,7 @@
 
     {{-- Topo --}}
     <div class="px-4 py-3 flex items-center gap-3 ">
-        <a href="{{ url($tenant->id) }}"
+        <a href="{{ url($tenant->slug) }}"
             class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
             <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -14,7 +14,7 @@
     <div class="max-w-2xl mx-auto px-4 py-4 space-y-3">
 
         @forelse($orders as $order)
-            <a href="{{ url($tenant->id . '/pedido/' . $order->id) }}"
+            <a href="{{ url($tenant->slug . '/pedido/' . $order->id) }}"
                 class="block bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200">
 
                 <div class="flex items-center justify-between mb-2">
@@ -64,7 +64,7 @@
                 </svg>
 
                 <p class="text-sm font-medium">Nenhum pedido encontrado</p>
-                <a href="{{ url($tenant->id) }}" class="text-xs font-semibold mt-2 inline-block"
+                <a href="{{ url($tenant->slug) }}" class="text-xs font-semibold mt-2 inline-block"
                     style="color: {{ $tenant->primary_color ?? '#00b050' }}">
                     Ver produtos →
                 </a>

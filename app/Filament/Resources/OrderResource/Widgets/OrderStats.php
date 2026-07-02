@@ -3,19 +3,25 @@
 namespace App\Filament\Resources\OrderResource\Widgets;
 
 use App\Models\Order;
-use Filament\Widgets\StatsOverviewWidget as BaseWidget;
-use Filament\Widgets\StatsOverviewWidget\Stat;
-use Illuminate\Support\Number as SupportNumber;
+use Filament\Widgets\Widget;
 
-class OrderStats extends BaseWidget
+class OrderStats extends Widget
 {
-    protected function getStats(): array
+    protected static string $view = 'filament.resources.order-resource.widgets.order-stats';
+
+    protected int|string|array $columnSpan = 'full';
+
+    protected static ?string $pollingInterval = '5s';
+
+    public function getViewData(): array
     {
         return [
-            Stat::make('Novos Pedidos', Order::query()->where('status', 'novo')->count()),
-            Stat::make('Pedidos em Processamento', Order::query()->where('status', 'em processamento')->count()),
-            Stat::make('Pedidos Enviados', Order::query()->where('status', 'enviado')->count()),
-            Stat::make('Valor Total Pedidos', SupportNumber::currency(Order::query()->sum('grand_total'), 'BRL'))
+            'totalOrders' => Order::count(),
+            'newOrders' => Order::where('status', 'novo')->count(),
+            'processingOrders' => Order::where('status', 'em processamento')->count(),
+            'sentOrders' => Order::where('status', 'enviado')->count(),
+            'canceledOrders' => Order::where('status', 'cancelado')->count(),
+            'currentStatus' => request()->query('status'),
         ];
     }
 }

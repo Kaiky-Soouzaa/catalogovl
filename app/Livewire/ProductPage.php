@@ -16,11 +16,11 @@ class ProductPage extends Component
     public int $quantity = 1;
     public bool $adicionado = false;
 
-    public function mount(int $userId, string $slug): void
+    public function mount(string $slug, string $produto_slug): void
     {
-        $this->tenant = User::findOrFail($userId);
+        $this->tenant = User::where('slug', $slug)->firstOrFail();
         app()->instance('tenant', $this->tenant);
-        $this->product = Product::where('slug', $slug)->where('is_active', true)->firstOrFail();
+        $this->product = Product::where('slug', $produto_slug)->where('is_active', true)->firstOrFail();
     }
 
     public function incrementar(): void

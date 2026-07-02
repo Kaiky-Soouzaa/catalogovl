@@ -20,9 +20,9 @@ class HomePage extends Component
 
     protected $listeners = ['cartUpdated' => 'atualizarCarrinho'];
 
-    public function mount(int $userId): void
+    public function mount(string $slug): void
     {
-        $this->tenant = User::findOrFail($userId);
+        $this->tenant = User::where('slug', $slug)->firstOrFail();
         app()->instance('tenant', $this->tenant);
         $this->atualizarCarrinho();
     }

@@ -18,6 +18,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -27,6 +28,9 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+
+
+
             ->login()
             ->brandLogo(asset('assets/images/vl-sistemas.png'))
             ->brandLogoHeight('3rem')
@@ -37,6 +41,10 @@ class AdminPanelProvider extends PanelProvider
 
 
             ->darkMode(false)
+
+            ->plugins([
+                FilamentApexChartsPlugin::make(),
+            ])
 
 
             ->userMenuItems([
@@ -51,6 +59,11 @@ class AdminPanelProvider extends PanelProvider
                 fn() => view('filament.hooks.user-menu-direct-profile')
             )
 
+            ->renderHook(
+                'panels::head.end',
+                fn() => view('filament.hooks.custom-styles')
+            )
+
             ->discoverResources(
                 in: app_path('Filament/Resources'),
                 for: 'App\\Filament\\Resources'
@@ -62,7 +75,7 @@ class AdminPanelProvider extends PanelProvider
             )
 
             ->pages([
-                Pages\Dashboard::class,
+                \App\Filament\Pages\Dashboard::class,
             ])
 
             ->discoverWidgets(

@@ -4,38 +4,42 @@ namespace App\Filament\Resources\OrderResource\Pages;
 
 use App\Filament\Resources\OrderResource;
 use App\Filament\Resources\OrderResource\Widgets\OrderStats;
-use App\Models\Order;
 use Filament\Actions;
-use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Builder;
 
 class ListOrders extends ListRecords
 {
     protected static string $resource = OrderResource::class;
 
-    protected function getHeaderActions(): array
+    public ?string $status = null;
+
+    protected $queryString = [
+        'status' => ['except' => null],
+    ];
+
+    protected function getHeaderWidgets(): array
     {
         return [
-            Actions\CreateAction::make(),
+            OrderStats::class,
         ];
     }
 
-    // protected function getHeaderWidgets(): array
-    // {
-    //     return [
-    //         OrderStats::class
-    //     ];
-    // }
-
-
-    public function getTabs(): array
+    protected function getHeaderActions(): array
     {
         return [
-            null => Tab::make('Todos os Pedidos'),
-            'novo' => Tab::make('Novos Pedidos')->query(fn($query) => $query->where('status', 'novo')),
-            'em processamento' => Tab::make('Pedidos em Processamento')->query(fn($query) => $query->where('status', 'em processamento')),
-            'enviado' => Tab::make('Pedidos Enviados')->query(fn($query) => $query->where('status', 'enviado')),
-            'cancelado' => Tab::make('Pedidos Cancelados')->query(fn($query) => $query->where('status', 'cancelado')),
+            Actions\CreateAction::make()
+                ->label('Criar Pedido')
+                ->icon('heroicon-m-plus'),
         ];
+    }
+
+    protected function getTableQuery(): Builder
+    {
+        return parent::getTableQuery()
+            ->when(
+                filled($this->status),
+                fn(Builder $query) => $query->where('status', $this->status)
+            );
     }
 }

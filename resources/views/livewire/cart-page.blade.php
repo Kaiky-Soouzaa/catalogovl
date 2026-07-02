@@ -2,7 +2,7 @@
 
     {{-- Topo --}}
     <div class="px-4 py-3 flex items-center gap-3  border-gray-100">
-        <a href="{{ url($tenant->id) }}"
+        <a href="{{ url($tenant->slug) }}"
             class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
             <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -86,7 +86,7 @@
                         d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 <p class="text-sm font-medium">Seu carrinho está vazio</p>
-                <a href="{{ url($tenant->id) }}" class="text-xs font-semibold mt-2 inline-block"
+                <a href="{{ url($tenant->slug) }}" class="text-xs font-semibold mt-2 inline-block"
                     style="color: {{ $tenant->primary_color ?? '#00b050' }}">
                     Ver produtos →
                 </a>
@@ -95,7 +95,7 @@
 
         {{-- Botão adicionar mais itens --}}
         @if ($cartItems->count() > 0)
-            <a href="{{ url($tenant->id) }}"
+            <a href="{{ url($tenant->slug) }}"
                 class="w-full py-3 rounded-2xl text-sm font-semibold border-2 flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-50"
                 style="color: {{ $tenant->primary_color ?? '#00b050' }}; border-color: {{ $tenant->primary_color ?? '#00b050' }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,7 +117,7 @@
                         R$ {{ number_format($total, 2, ',', '.') }}
                     </span>
                 </div>
-                <a href="{{ url($tenant->id . '/finalizar') }}"
+                <a href="{{ url($tenant->slug . '/finalizar') }}"
                     class="w-full py-3 rounded-2xl text-sm font-bold text-white flex items-center justify-center transition-all duration-200"
                     style="background-color: {{ $tenant->primary_color ?? '#00b050' }}">
                     Continuar →

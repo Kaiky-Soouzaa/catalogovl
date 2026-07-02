@@ -11,17 +11,16 @@ class OrdersPage extends Component
     public User $tenant;
     public $orders;
 
-    public function mount(int $userId): void
+    public function mount(string $slug): void
     {
-        $this->tenant = User::findOrFail($userId);
+        $this->tenant = User::where('slug', $slug)->firstOrFail();
         app()->instance('tenant', $this->tenant);
 
-        // Busca pelos IDs salvos na sessão
-        $orderIds = session()->get('orders_' . $userId, []);
+        $orderIds = session()->get('orders_' . $this->tenant->id, []);
 
         if (!empty($orderIds)) {
             $this->orders = Order::with('items.product')
-                ->where('user_id', $userId)
+                ->where('user_id', $this->tenant->id)
                 ->whereIn('id', $orderIds)
                 ->orderBy('created_at', 'desc')
                 ->get();

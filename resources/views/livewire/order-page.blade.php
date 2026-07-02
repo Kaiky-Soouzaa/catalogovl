@@ -1,8 +1,55 @@
 <div class="bg-gray-50 min-h-screen pb-10">
 
+    {{-- Gera o link WhatsApp no topo --}}
+    @php
+        $linkWhatsapp = '#';
+        if ($tenant->whatsapp) {
+            $whatsapp = preg_replace('/\D/', '', $tenant->whatsapp);
+
+            $itens = $order->items
+                ->map(function ($i) {
+                    $nome = strip_tags($i->product->name ?? 'Produto');
+                    return "• {$i->quantity}x {$nome} - R$ " . number_format($i->total_amount ?? 0, 2, ',', '.');
+                })
+                ->toArray();
+
+            $entrega =
+                $order->delivery_type === 'entrega'
+                    ? 'Entrega: ' . ($order->delivery_address ?? 'Não informado')
+                    : 'Retirada no estabelecimento';
+
+            $pagamento = match ($order->payment_method) {
+                'pix' => 'PIX',
+                'dinheiro' => 'Dinheiro',
+                'cartao', 'cartão' => 'Cartão',
+                default => ucfirst($order->payment_method ?? ''),
+            };
+
+            $mensagem = implode("\n", [
+                '*NOVO PEDIDO*',
+                '',
+                '*Pedido:* #' . $order->id,
+                '*Data:* ' . $order->created_at->format('d/m/Y H:i'),
+                '',
+                '*Cliente:* ' . ($order->customer_name ?? ''),
+                '*Telefone:* ' . ($order->customer_phone ?? ''),
+                '',
+                '*Itens:*',
+                ...$itens,
+                '',
+                '*Total:* R$ ' . number_format($order->grand_total ?? 0, 2, ',', '.'),
+                '*Pagamento:* ' . $pagamento,
+                '',
+                $entrega,
+            ]);
+
+            $linkWhatsapp = 'https://wa.me/' . $whatsapp . '?text=' . urlencode($mensagem);
+        }
+    @endphp
+
     {{-- Topo --}}
-    <div class=" px-4 py-3 flex items-center gap-3 ">
-        <a href="{{ url($tenant->id) }}"
+    <div class="px-4 py-3 flex items-center gap-3">
+        <a href="{{ url($tenant->slug) }}"
             class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
             <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -16,7 +63,6 @@
         {{-- Card principal --}}
         <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
 
-            {{-- Número e data --}}
             <div class="flex items-center gap-2 mb-4">
                 <p class="text-lg font-bold text-gray-800">Pedido {{ $order->id }}</p>
                 <span class="w-2 h-2 rounded-full bg-green-400"></span>
@@ -27,7 +73,7 @@
 
             {{-- Botão WhatsApp --}}
             @if ($tenant->whatsapp)
-                <a id="btn-whatsapp" href="{{ $linkWhatsapp ?? '#' }}" target="_blank" rel="noopener noreferrer"
+                <a href="{{ $linkWhatsapp }}" target="_blank" rel="noopener noreferrer"
                     class="w-full py-3 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 mb-5 transition-all duration-200"
                     style="background-color: #25D366">
                     <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -122,80 +168,3 @@
     </div>
 
 </div>
-
-{{-- Script WhatsApp - Produção --}}
-@if (!empty($tenant->whatsapp))
-    @php
-        $whatsapp = preg_replace('/\D/', '', $tenant->whatsapp ?? '');
-
-        $limparTexto = function ($texto) {
-            $texto = (string) ($texto ?? 'Não informado');
-            $texto = strip_tags($texto);
-            $texto = str_replace(['*', '_', '~', '`'], '', $texto);
-            return trim($texto);
-        };
-
-        $itensPedido = $order->items
-            ->take(25)
-            ->map(function ($i) use ($limparTexto) {
-                $produto = $limparTexto($i->product->name ?? 'Produto sem nome');
-                $quantidade = $i->quantity ?? 0;
-                $valor = number_format($i->total_amount ?? 0, 2, ',', '.');
-
-                return "• {$quantidade}x {$produto} - R$ {$valor}";
-            })
-            ->toArray();
-
-        $totalItens = $order->items->count();
-
-        if ($totalItens > 25) {
-            $itensPedido[] = '• +' . ($totalItens - 25) . ' itens adicionais no pedido';
-        }
-
-        $entregaTexto =
-            $order->delivery_type === 'entrega'
-                ? '🚚 Entrega: ' . $limparTexto($order->delivery_address)
-                : '🏬 Retirada no estabelecimento';
-
-        $pagamentoTexto = match ($order->payment_method) {
-            'pix' => 'PIX',
-            'dinheiro' => 'Dinheiro',
-            'cartao', 'cartão' => 'Cartão',
-            default => ucfirst($limparTexto($order->payment_method ?? 'Não informado')),
-        };
-
-        $mensagemWhatsapp = implode("\n", [
-            '*NOVO PEDIDO*',
-            '',
-            '*Pedido:* #' . $order->id,
-            '*Data:* ' . $order->created_at->format('d/m/Y H:i'),
-            '',
-            '*Cliente:* ' . $limparTexto($order->customer_name),
-            '*Telefone:* ' . $limparTexto($order->customer_phone),
-            '',
-            '*Itens:*',
-            ...$itensPedido,
-            '',
-            "*Total:* R$ " . number_format($order->grand_total ?? 0, 2, ',', '.'),
-            '*Pagamento:* ' . $pagamentoTexto,
-            '',
-            $entregaTexto,
-        ]);
-
-        $linkWhatsapp = $whatsapp ? 'https://wa.me/' . $whatsapp . '?text=' . urlencode($mensagemWhatsapp) : '#';
-    @endphp
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const btn = document.getElementById('btn-whatsapp');
-
-            if (!btn) {
-                return;
-            }
-
-            btn.href = @json($linkWhatsapp);
-            btn.target = '_blank';
-            btn.rel = 'noopener noreferrer';
-        });
-    </script>
-@endif

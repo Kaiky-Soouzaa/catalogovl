@@ -14,6 +14,7 @@ class Order extends Model
         'customer_name',
         'customer_phone',
         'delivery_type',
+        'delivery_address',
         'grand_total',
         'payment_method',
         'payment_status',

@@ -44,7 +44,7 @@
                         @endphp
 
                         <div class="flex-shrink-0 bg-white rounded-xl p-3 w-36 shadow-sm cursor-pointer"
-                            onclick="window.location='{{ url($tenant->id . '/produto/' . $produto->slug) }}'">
+                            onclick="window.location='{{ url($tenant->slug . '/produto/' . $produto->slug) }}'">
 
                             @if ($img)
                                 <img src="{{ asset('storage/' . $img) }}" alt="{{ $produto->name }}"
@@ -93,7 +93,7 @@
                             @endphp
 
                             <div class="flex-shrink-0 w-40 bg-white rounded-2xl p-3 shadow-sm border border-gray-100 cursor-pointer flex flex-col"
-                                onclick="window.location='{{ url($tenant->id . '/produto/' . $produto->slug) }}'">
+                                onclick="window.location='{{ url($tenant->slug . '/produto/' . $produto->slug) }}'">
 
                                 <div class="relative">
                                     @if ($produto->discount_percentage > 0)
@@ -223,7 +223,7 @@
                                 @endphp
 
                                 <div class="flex-shrink-0 w-40 bg-white rounded-2xl p-3 shadow-sm border border-gray-100 cursor-pointer flex flex-col"
-                                    onclick="window.location='{{ url($tenant->id . '/produto/' . $produto->slug) }}'">
+                                    onclick="window.location='{{ url($tenant->slug . '/produto/' . $produto->slug) }}'">
 
                                     <div class="relative">
                                         @if ($produto->discount_percentage > 0)
@@ -373,7 +373,7 @@
                     </p>
                 </div>
 
-                <a href="{{ url($tenant->id . '/carrinho') }}"
+                <a href="{{ url($tenant->slug . '/carrinho') }}"
                     class="bg-white rounded-xl px-4 py-2 text-sm font-bold transition-all duration-200"
                     style="color: {{ $tenant->primary_color ?? '#00b050' }}">
                     Finalizar pedido →

@@ -16,34 +16,46 @@ class CheckoutPage extends Component
     public $cartItems;
     public float $total = 0;
 
-    // Etapas: entrega → pagamento → metodo_pagamento → dados → confirmado
-    public string $etapa = 'entrega';
-
-    // Entrega
     public string $tipoEntrega = '';
-
-    // Pagamento
     public string $tipoPagamento = '';
     public string $metodoPagamento = '';
 
-    // Dados do cliente
     public string $nome = '';
     public string $telefone = '';
     public string $email = '';
     public string $cpf = '';
 
-    // Endereço (só se entrega)
     public string $rua = '';
     public string $numero = '';
     public string $bairro = '';
     public string $cidade = '';
     public string $referencia = '';
 
-    public function mount(int $userId): void
+    public function mount(string $slug): void
     {
-        $this->tenant = User::findOrFail($userId);
+        $this->tenant = User::where('slug', $slug)->firstOrFail();
         app()->instance('tenant', $this->tenant);
+
+        $this->tipoEntrega     = session()->get('checkout_entrega_' . $this->tenant->id, '');
+        $this->tipoPagamento   = session()->get('checkout_pagamento_tipo_' . $this->tenant->id, '');
+        $this->metodoPagamento = session()->get('checkout_metodo_' . $this->tenant->id, '');
+
+        if (!$this->tipoEntrega) {
+            $this->redirect(url($slug . '/finalizar'));
+            return;
+        }
+
+        if (!$this->metodoPagamento) {
+            $this->redirect(url($slug . '/finalizar/metodo'));
+            return;
+        }
+
         $this->carregarCarrinho();
+
+        if ($this->cartItems->isEmpty()) {
+            $this->redirect(url($slug . '/carrinho'));
+            return;
+        }
     }
 
     public function carregarCarrinho(): void
@@ -57,36 +69,15 @@ class CheckoutPage extends Component
         $this->total = $this->cartItems->sum(fn($i) => $i->product->price * $i->quantity);
     }
 
-    public function selecionarEntrega(string $tipo): void
-    {
-        $this->tipoEntrega = $tipo;
-        $this->etapa = 'pagamento';
-    }
-
-    public function selecionarTipoPagamento(string $tipo): void
-    {
-        $this->tipoPagamento = $tipo;
-        $this->etapa = 'metodo_pagamento';
-    }
-
-    public function selecionarMetodoPagamento(string $metodo): void
-    {
-        $this->metodoPagamento = $metodo;
-        $this->etapa = 'dados';
-    }
-
-    public function voltar(): void
-    {
-        $this->etapa = match ($this->etapa) {
-            'pagamento'        => 'entrega',
-            'metodo_pagamento' => 'pagamento',
-            'dados'            => 'metodo_pagamento',
-            default            => 'entrega',
-        };
-    }
-
     public function confirmar(): void
     {
+
+        if ($this->cartItems->isEmpty()) {
+            $this->redirect(url($this->tenant->slug . '/carrinho'));
+            return;
+        }
+
+
         $this->validate([
             'nome'     => 'required|min:3',
             'telefone' => 'required|min:8',
@@ -101,7 +92,6 @@ class CheckoutPage extends Component
             ]);
         }
 
-        // Cria o pedido
         $order = Order::create([
             'user_id'          => $this->tenant->id,
             'session_id'       => session()->getId(),
@@ -110,7 +100,7 @@ class CheckoutPage extends Component
             'delivery_type'    => $this->tipoEntrega,
             'delivery_address' => $this->tipoEntrega === 'entrega'
                 ? "{$this->rua}, {$this->numero} - {$this->bairro}, {$this->cidade}"
-                : "retirada",
+                : 'Retirada no estabelecimento',
             'payment_method'   => $this->metodoPagamento,
             'payment_status'   => 'pendente',
             'grand_total'      => $this->total,
@@ -118,7 +108,6 @@ class CheckoutPage extends Component
             'notes'            => $this->email ?: null,
         ]);
 
-        // Cria os itens do pedido
         foreach ($this->cartItems as $item) {
             OrderItem::create([
                 'order_id'     => $order->id,
@@ -130,7 +119,6 @@ class CheckoutPage extends Component
             ]);
         }
 
-        // Salva endereço se for entrega
         if ($this->tipoEntrega === 'entrega') {
             Address::create([
                 'order_id'       => $order->id,
@@ -141,22 +129,22 @@ class CheckoutPage extends Component
             ]);
         }
 
-        // Limpa o carrinho
         Cart::where('user_id', $this->tenant->id)
             ->where('session_id', session()->getId())
             ->delete();
 
-        // Após criar o pedido, salva na sessão
-        session()->put('last_order_' . $this->tenant->id, $order->id);
+        session()->forget([
+            'checkout_entrega_' . $this->tenant->id,
+            'checkout_pagamento_tipo_' . $this->tenant->id,
+            'checkout_metodo_' . $this->tenant->id,
+        ]);
 
-        // Também salva lista de pedidos do cliente
+        session()->put('last_order_' . $this->tenant->id, $order->id);
         $pedidos = session()->get('orders_' . $this->tenant->id, []);
         $pedidos[] = $order->id;
         session()->put('orders_' . $this->tenant->id, $pedidos);
 
-
-        // Redireciona para página do pedido
-        $this->redirect(url($this->tenant->id . '/pedido/' . $order->id));
+        $this->redirect(url($this->tenant->slug . '/pedido/' . $order->id));
     }
 
     public function render()
