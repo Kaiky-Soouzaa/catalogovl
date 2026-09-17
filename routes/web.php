@@ -11,6 +11,8 @@ use App\Livewire\PaymentMethodPage;
 use App\Livewire\PaymentTypePage;
 use App\Livewire\SearchPage;
 use Illuminate\Support\Facades\Route;
+use App\Livewire\CategoryPage;
+use App\Livewire\OfertasPage;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,10 +27,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get("/{slug}", HomePage::class);
 Route::get("/{slug}/produto/{produto_slug}", ProductPage::class);
-Route::get("/{slug}/carrinho", CartPage::class);
-Route::get("/{slug}/finalizar", DeliveryPage::class);
-Route::get("/{slug}/finalizar/pagamento", PaymentTypePage::class);
-Route::get("/{slug}/finalizar/metodo", PaymentMethodPage::class);
-Route::get("/{slug}/finalizar/dados", CheckoutPage::class);
+// Route::get("/{slug}/carrinho", CartPage::class);
+Route::get('{slug}/ofertas', OfertasPage::class);
+Route::get('{slug}/categoria/{categoriaSlug}', CategoryPage::class);
+Route::get('{slug}/finalizar', CheckoutPage::class);
 Route::get("/{slug}/pedido/{orderId}", OrderPage::class);
 Route::get("/{slug}/pedidos", OrdersPage::class);

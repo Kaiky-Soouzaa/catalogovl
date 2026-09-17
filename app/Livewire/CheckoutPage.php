@@ -3,7 +3,6 @@
 namespace App\Livewire;
 
 use App\Models\Cart;
-use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Address;
@@ -16,15 +15,20 @@ class CheckoutPage extends Component
     public $cartItems;
     public float $total = 0;
 
-    public string $tipoEntrega = '';
-    public string $tipoPagamento = '';
-    public string $metodoPagamento = '';
+    // Controle de navegação interna (sem redirect entre páginas)
+    public string $step = 'agendamento'; // 'agendamento' | 'pagamento'
+    public string $tipoEntrega = 'entrega'; // 'entrega' | 'retirada'
 
+    // Pagamento
+    public string $tipoPagamento = ''; // ex: 'online' | 'na_entrega'
+    public string $metodoPagamento = ''; // ex: 'pix' | 'cartao' | 'dinheiro'
+
+    // Dados do cliente
     public string $nome = '';
     public string $telefone = '';
     public string $email = '';
-    public string $cpf = '';
 
+    // Endereço (só usado se tipoEntrega === 'entrega')
     public string $rua = '';
     public string $numero = '';
     public string $bairro = '';
@@ -35,20 +39,6 @@ class CheckoutPage extends Component
     {
         $this->tenant = User::where('slug', $slug)->firstOrFail();
         app()->instance('tenant', $this->tenant);
-
-        $this->tipoEntrega     = session()->get('checkout_entrega_' . $this->tenant->id, '');
-        $this->tipoPagamento   = session()->get('checkout_pagamento_tipo_' . $this->tenant->id, '');
-        $this->metodoPagamento = session()->get('checkout_metodo_' . $this->tenant->id, '');
-
-        if (!$this->tipoEntrega) {
-            $this->redirect(url($slug . '/finalizar'));
-            return;
-        }
-
-        if (!$this->metodoPagamento) {
-            $this->redirect(url($slug . '/finalizar/metodo'));
-            return;
-        }
 
         $this->carregarCarrinho();
 
@@ -69,20 +59,13 @@ class CheckoutPage extends Component
         $this->total = $this->cartItems->sum(fn($i) => $i->product->price * $i->quantity);
     }
 
-    public function confirmar(): void
+    public function selecionarTipoEntrega(string $tipo): void
     {
+        $this->tipoEntrega = $tipo;
+    }
 
-        if ($this->cartItems->isEmpty()) {
-            $this->redirect(url($this->tenant->slug . '/carrinho'));
-            return;
-        }
-
-
-        $this->validate([
-            'nome'     => 'required|min:3',
-            'telefone' => 'required|min:8',
-        ]);
-
+    public function irParaPagamento(): void
+    {
         if ($this->tipoEntrega === 'entrega') {
             $this->validate([
                 'rua'    => 'required',
@@ -91,6 +74,32 @@ class CheckoutPage extends Component
                 'cidade' => 'required',
             ]);
         }
+
+        $this->step = 'pagamento';
+    }
+
+    public function voltarParaAgendamento(): void
+    {
+        $this->step = 'agendamento';
+    }
+
+    public function selecionarMetodoPagamento(string $metodo): void
+    {
+        $this->metodoPagamento = $metodo;
+    }
+
+    public function confirmar(): void
+    {
+        if ($this->cartItems->isEmpty()) {
+            $this->redirect(url($this->tenant->slug . '/carrinho'));
+            return;
+        }
+
+        $this->validate([
+            'nome'            => 'required|min:3',
+            'telefone'        => 'required|min:8',
+            'metodoPagamento' => 'required',
+        ]);
 
         $order = Order::create([
             'user_id'          => $this->tenant->id,
@@ -133,12 +142,6 @@ class CheckoutPage extends Component
             ->where('session_id', session()->getId())
             ->delete();
 
-        session()->forget([
-            'checkout_entrega_' . $this->tenant->id,
-            'checkout_pagamento_tipo_' . $this->tenant->id,
-            'checkout_metodo_' . $this->tenant->id,
-        ]);
-
         session()->put('last_order_' . $this->tenant->id, $order->id);
         $pedidos = session()->get('orders_' . $this->tenant->id, []);
         $pedidos[] = $order->id;
@@ -150,6 +153,6 @@ class CheckoutPage extends Component
     public function render()
     {
         return view('livewire.checkout-page')
-            ->layout('components.layouts.app', ['tenant' => $this->tenant]);
+            ->layout('components.layouts.checkout', ['tenant' => $this->tenant]);
     }
 }

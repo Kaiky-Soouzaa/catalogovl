@@ -3,19 +3,14 @@
 namespace App\Livewire;
 
 use App\Models\User;
-use App\Models\Category;
 use App\Models\Product;
 use App\Models\Cart;
 use App\Models\CartItem;
-use App\Models\Banner;
 use Livewire\Component;
 
-class HomePage extends Component
+class OfertasPage extends Component
 {
     public User $tenant;
-    public string $busca = '';
-    public int $totalItens = 0;
-    public float $totalValor = 0;
     public array $adicionados = [];
     public array $quantidades = [];
 
@@ -25,18 +20,16 @@ class HomePage extends Component
     {
         $this->tenant = User::where('slug', $slug)->firstOrFail();
         app()->instance('tenant', $this->tenant);
+
         $this->atualizarCarrinho();
     }
 
     public function atualizarCarrinho(): void
     {
-        $cart = Cart::with('items.product')
+        $cart = Cart::with('items')
             ->where('user_id', $this->tenant->id)
             ->where('session_id', session()->getId())
             ->first();
-
-        $this->totalItens = $cart ? $cart->items->sum('quantity') : 0;
-        $this->totalValor = $cart ? $cart->items->sum(fn($i) => $i->product->price * $i->quantity) : 0;
 
         if ($cart) {
             $this->adicionados = $cart->items->pluck('product_id')->toArray();
@@ -49,11 +42,9 @@ class HomePage extends Component
 
     public function adicionarRapido(int $productId): void
     {
-        $sessionId = session()->getId();
-
         $cart = Cart::firstOrCreate([
             'user_id'    => $this->tenant->id,
-            'session_id' => $sessionId,
+            'session_id' => session()->getId(),
         ]);
 
         $item = CartItem::where('cart_id', $cart->id)
@@ -83,11 +74,9 @@ class HomePage extends Component
 
         if (!$cart) return;
 
-        $item = CartItem::where('cart_id', $cart->id)
+        CartItem::where('cart_id', $cart->id)
             ->where('product_id', $productId)
-            ->first();
-
-        if ($item) $item->increment('quantity');
+            ->increment('quantity');
 
         $this->atualizarCarrinho();
         $this->dispatch('cartUpdated');
@@ -119,37 +108,13 @@ class HomePage extends Component
 
     public function render()
     {
-        $categorias = Category::with(['products' => function ($query) {
-            $query->where('is_active', true)->orderBy('name');
-        }])
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
-
-        $produtosOferta = Product::where('is_active', true)
+        $produtos = Product::where('is_active', true)
             ->where('on_sale', true)
             ->whereNotNull('original_price')
-            ->when($this->busca, fn($q) => $q->where('name', 'like', "%{$this->busca}%"))
             ->orderBy('name')
             ->get();
 
-        if ($this->busca) {
-            $categorias = Category::with(['products' => function ($query) {
-                $query->where('is_active', true)
-                    ->where('name', 'like', "%{$this->busca}%")
-                    ->orderBy('name');
-            }])
-                ->where('is_active', true)
-                ->orderBy('name')
-                ->get();
-        }
-
-        $banners = Banner::where('user_id', $this->tenant->id)
-            ->where('is_active', true)
-            ->orderBy('order')
-            ->get();
-
-        return view('livewire.home-page', compact('categorias', 'produtosOferta', 'banners'))
-            ->layout('components.layouts.app', ['tenant' => $this->tenant]);
+        return view('livewire.ofertas-page', compact('produtos'))
+            ->layout('components.layouts.checkout', ['tenant' => $this->tenant]);
     }
 }

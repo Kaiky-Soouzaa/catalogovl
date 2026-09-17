@@ -25,74 +25,204 @@
 
     <div class="max-w-7xl mx-auto px-4 py-4 space-y-6">
 
-        {{-- ===== BANNER OFERTAS ===== --}}
-        @if ($produtosOferta->count() > 0)
-            <div class="rounded-2xl p-4 flex gap-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                style="background: linear-gradient(135deg, {{ $tenant->primary_color ?? '#00b050' }}15, {{ $tenant->primary_color ?? '#00b050' }}08)">
-
-                <div class="flex-shrink-0 flex flex-col justify-center min-w-[140px]">
-                    <p class="text-base font-bold text-gray-800 leading-tight">Ofertas imperdíveis pra você!</p>
-                    <p class="text-xs text-gray-500 mt-1">Aproveite os melhores preços</p>
+        {{-- ===== CARROSSEL DE BANNERS ===== --}}
+        @if ($banners->count() > 0)
+            <div class="relative rounded-2xl overflow-hidden" x-data="{
+                slide: 0,
+                total: {{ $banners->count() }},
+                touchStartX: 0,
+                next() { this.slide = (this.slide + 1) % this.total },
+                prev() { this.slide = (this.slide - 1 + this.total) % this.total },
+                handleTouchStart(e) { this.touchStartX = e.changedTouches[0].screenX },
+                handleTouchEnd(e) {
+                    const touchEndX = e.changedTouches[0].screenX;
+                    const diff = this.touchStartX - touchEndX;
+                    if (Math.abs(diff) > 40) {
+                        diff > 0 ? this.next() : this.prev();
+                    }
+                }
+            }"
+                @touchstart="handleTouchStart($event)" @touchend="handleTouchEnd($event)">
+                <div class="flex transition-transform duration-500 ease-out"
+                    :style="`transform: translateX(-${slide * 100}%)`">
+                    @foreach ($banners as $banner)
+                        <div class="w-full flex-shrink-0">
+                            @if ($banner->link)
+                                <a href="{{ $banner->link }}">
+                                    <img src="{{ asset('storage/' . $banner->image) }}" alt="Banner"
+                                        class="w-full h-auto object-cover">
+                                </a>
+                            @else
+                                <img src="{{ asset('storage/' . $banner->image) }}" alt="Banner"
+                                    class="w-full h-auto object-cover">
+                            @endif
+                        </div>
+                    @endforeach
                 </div>
 
-                <div
-                    class="flex gap-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-1">
-                    @foreach ($produtosOferta->take(5) as $produto)
+                @if ($banners->count() > 1)
+                    <button @click="prev()"
+                        class="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white items-center justify-center shadow-md cursor-pointer hover:scale-105 transition-transform">
+                        <svg class="w-5 h-5" style="color: {{ $tenant->primary_color ?? '#00b050' }}" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <button @click="next()"
+                        class="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white items-center justify-center shadow-md cursor-pointer hover:scale-105 transition-transform">
+                        <svg class="w-5 h-5" style="color: {{ $tenant->primary_color ?? '#00b050' }}" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                        <template x-for="i in total" :key="i">
+                            <button @click="slide = i - 1"
+                                class="h-1.5 rounded-full transition-all duration-300 cursor-pointer"
+                                :style="slide === i - 1 ?
+                                    'width: 1.5rem; background-color: {{ $tenant->primary_color ?? '#00b050' }};' :
+                                    'width: 0.375rem; background-color: white; opacity: 0.6;'"></button>
+                        </template>
+                    </div>
+                @endif
+            </div>
+        @endif
+
+        {{-- ===== PRODUTOS EM OFERTA ===== --}}
+        @if ($produtosOferta->count() > 0)
+            <div class="bg-white rounded-2xl p-4 shadow-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-base font-bold text-gray-800">Produtos em oferta</h2>
+                    <a href="{{ url($tenant->slug . '/ofertas') }}"
+                        class="text-sm font-semibold flex items-center gap-1"
+                        style="color: {{ $tenant->primary_color ?? '#00b050' }}">
+                        Ver todos
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </div>
+
+                <div class="flex gap-3">
+                    @foreach ($produtosOferta->take(2) as $produto)
                         @php
                             $imagens = is_array($produto->images) ? $produto->images : [];
                             $img = $imagens[0] ?? null;
                         @endphp
 
-                        <div class="flex-shrink-0 bg-white rounded-xl p-3 w-36 shadow-sm cursor-pointer"
+                        <div class="flex-shrink-0 w-40 p-3 cursor-pointer flex flex-col"
                             onclick="window.location='{{ url($tenant->slug . '/produto/' . $produto->slug) }}'">
 
-                            @if ($img)
-                                <img src="{{ asset('storage/' . $img) }}" alt="{{ $produto->name }}"
-                                    class="w-14 h-14 object-contain mx-auto">
-                            @else
-                                <div class="w-14 h-14 bg-gray-100 rounded-lg mx-auto"></div>
-                            @endif
+                            <div class="relative">
+                                @if ($produto->discount_percentage > 0)
+                                    <span
+                                        class="absolute top-0 left-0 text-xs font-bold text-white px-1.5 py-0.5 rounded-lg"
+                                        style="background-color: {{ $tenant->primary_color ?? '#00b050' }}">
+                                        -{{ $produto->discount_percentage }}%
+                                    </span>
+                                @endif
 
-                            <p class="text-xs font-medium text-gray-700 mt-2 line-clamp-2 leading-tight">
-                                {{ $produto->name }}
-                            </p>
+                                @if ($img)
+                                    <img src="{{ asset('storage/' . $img) }}" alt="{{ $produto->name }}"
+                                        class="w-full h-28 object-contain">
+                                @else
+                                    <div class="w-full h-28 bg-gray-100 rounded-xl flex items-center justify-center">
+                                        <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                @endif
+                            </div>
 
-                            <p class="text-sm font-bold mt-1" style="color: {{ $tenant->primary_color ?? '#00b050' }}">
-                                R$ {{ number_format($produto->price, 2, ',', '.') }}
-                            </p>
+                            <div class="relative z-10 flex justify-end mt-1 mb-1" x-data="{ show: false, timer: null }">
+                                <div x-show="show" x-transition
+                                    class="flex items-center gap-1 rounded-full text-white shadow-md px-1 py-1"
+                                    style="background-color: {{ $tenant->primary_color ?? '#00b050' }}"
+                                    onclick="event.stopPropagation()">
+                                    <button wire:click.stop="decrementarHome({{ $produto->id }})"
+                                        x-on:click="{{ ($quantidades[$produto->id] ?? 1) <= 1 ? 'clearTimeout(timer); show = false;' : 'clearTimeout(timer); timer = setTimeout(() => show = false, 2000);' }}"
+                                        class="w-7 h-7 flex items-center justify-center cursor-pointer">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M20 12H4" />
+                                        </svg>
+                                    </button>
+                                    <span
+                                        class="text-sm font-bold w-5 text-center">{{ $quantidades[$produto->id] ?? 1 }}</span>
+                                    <button wire:click.stop="incrementarHome({{ $produto->id }})"
+                                        x-on:click="clearTimeout(timer); timer = setTimeout(() => show = false, 2000)"
+                                        class="w-7 h-7 flex items-center justify-center cursor-pointer">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 4v16m8-8H4" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <button x-show="!show" x-transition:enter="transition ease-out duration-300 delay-100"
+                                    x-transition:enter-start="opacity-0 scale-75"
+                                    x-transition:enter-end="opacity-100 scale-100"
+                                    wire:click.stop="{{ in_array($produto->id, $adicionados) ? 'incrementarHome(' . $produto->id . ')' : 'adicionarRapido(' . $produto->id . ')' }}"
+                                    x-on:click="show = true; clearTimeout(timer); timer = setTimeout(() => show = false, 2000)"
+                                    class="w-9 h-9 rounded-full text-white flex items-center justify-center shadow-md cursor-pointer"
+                                    style="background-color: {{ $tenant->primary_color ?? '#00b050' }}">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m8-8H4" />
+                                    </svg>
+                                </button>
+                            </div>
 
-                            @if ($produto->original_price)
-                                <p class="text-xs text-gray-400 line-through">
-                                    R$ {{ number_format($produto->original_price, 2, ',', '.') }}
+                            <div class="flex flex-col flex-1">
+                                <p class="text-sm font-bold text-gray-900">
+                                    R$ {{ number_format($produto->price, 2, ',', '.') }}
                                 </p>
-                                <span class="text-xs font-bold text-red-500">
-                                    -{{ $produto->discount_percentage }}%
-                                </span>
-                            @endif
+
+                                @if ($produto->original_price)
+                                    <p class="text-xs text-gray-400 line-through">
+                                        R$ {{ number_format($produto->original_price, 2, ',', '.') }}
+                                    </p>
+                                @endif
+
+                                <p class="text-xs text-gray-600 mt-1 line-clamp-2 leading-tight">
+                                    {{ $produto->name }}
+                                </p>
+                            </div>
                         </div>
                     @endforeach
                 </div>
             </div>
         @endif
 
-        {{-- ===== PRODUTOS EM OFERTA ===== --}}
-        @if ($produtosOferta->count() > 0)
-            <div>
-                <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-base font-bold text-gray-800">Produtos em oferta</h2>
-                </div>
+        {{-- ===== SEÇÕES POR CATEGORIA ===== --}}
+        @forelse($categorias as $categoria)
+            @if ($categoria->products->count() > 0)
+                <div id="categoria-{{ $categoria->slug }}" class="bg-white rounded-2xl p-4 shadow-sm">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-base font-bold text-gray-800">{{ $categoria->name }}</h2>
+                        <a href="{{ url($tenant->slug . '/categoria/' . $categoria->slug) }}"
+                            class="text-sm font-semibold flex items-center gap-1"
+                            style="color: {{ $tenant->primary_color ?? '#00b050' }}">
+                            Ver todos
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5l7 7-7 7" />
+                            </svg>
+                        </a>
+                    </div>
 
-                <div class="relative -mx-4 px-4">
-                    <div id="scroll-ofertas" onscroll="handleProductScroll('ofertas')"
-                        class="flex gap-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-2 scroll-smooth">
-
-                        @foreach ($produtosOferta as $produto)
+                    <div class="flex gap-3">
+                        @foreach ($categoria->products->take(2) as $produto)
                             @php
                                 $imagens = is_array($produto->images) ? $produto->images : [];
                                 $img = $imagens[0] ?? null;
                             @endphp
 
-                            <div class="flex-shrink-0 w-40 bg-white rounded-2xl p-3 shadow-sm border border-gray-100 cursor-pointer flex flex-col"
+                            <div class="flex-shrink-0 w-40 p-3 cursor-pointer flex flex-col"
                                 onclick="window.location='{{ url($tenant->slug . '/produto/' . $produto->slug) }}'">
 
                                 <div class="relative">
@@ -112,230 +242,73 @@
                                             class="w-full h-28 bg-gray-100 rounded-xl flex items-center justify-center">
                                             <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    stroke-width="1.5"
                                                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
                                         </div>
                                     @endif
                                 </div>
 
-                                <div class="flex flex-col flex-1">
-                                    <p
-                                        class="text-xs font-medium text-gray-700 mt-2 line-clamp-2 leading-tight uppercase">
-                                        {{ $produto->name }}
-                                    </p>
-
-                                    <div class="mt-auto pt-1">
-                                        <p class="text-sm font-bold text-gray-900">
-                                            R$ {{ number_format($produto->price, 2, ',', '.') }}
-                                        </p>
-
-                                        @if ($produto->original_price)
-                                            <p class="text-xs text-gray-400 line-through">
-                                                R$ {{ number_format($produto->original_price, 2, ',', '.') }}
-                                            </p>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <div class="mt-2" onclick="event.stopPropagation()">
-                                    @if (in_array($produto->id, $adicionados))
-                                        <div class="w-full flex items-center justify-between rounded-xl border px-1 py-0.5"
-                                            style="border-color: {{ $tenant->primary_color ?? '#00b050' }}">
-
-                                            <button wire:click.stop="decrementarHome({{ $produto->id }})"
-                                                class="w-6 h-6 flex items-center justify-center rounded-lg transition-colors duration-200"
-                                                style="color: {{ $tenant->primary_color ?? '#00b050' }}">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2" d="M20 12H4" />
-                                                </svg>
-                                            </button>
-
-                                            <span class="text-xs font-bold"
-                                                style="color: {{ $tenant->primary_color ?? '#00b050' }}">
-                                                {{ $quantidades[$produto->id] ?? 1 }}
-                                            </span>
-
-                                            <button wire:click.stop="incrementarHome({{ $produto->id }})"
-                                                class="w-6 h-6 flex items-center justify-center rounded-lg transition-colors duration-200"
-                                                style="color: {{ $tenant->primary_color ?? '#00b050' }}">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2" d="M12 4v16m8-8H4" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    @else
-                                        <button wire:click.stop="adicionarRapido({{ $produto->id }})"
-                                            class="w-full py-1.5 rounded-xl text-xs font-semibold text-white transition-all duration-200 flex items-center justify-center gap-1"
-                                            style="background-color: {{ $tenant->primary_color ?? '#00b050' }}">
+                                <div class="relative z-10 flex justify-end mt-1 mb-1" x-data="{ show: false, timer: null }">
+                                    <div x-show="show" x-transition
+                                        class="flex items-center gap-1 rounded-full text-white shadow-md px-1 py-1"
+                                        style="background-color: {{ $tenant->primary_color ?? '#00b050' }}"
+                                        onclick="event.stopPropagation()">
+                                        <button wire:click.stop="decrementarHome({{ $produto->id }})"
+                                            x-on:click="{{ ($quantidades[$produto->id] ?? 1) <= 1 ? 'clearTimeout(timer); show = false;' : 'clearTimeout(timer); timer = setTimeout(() => show = false, 2000);' }}"
+                                            class="w-7 h-7 flex items-center justify-center cursor-pointer">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                    d="M20 12H4" />
                                             </svg>
-                                            Adicionar
                                         </button>
+                                        <span
+                                            class="text-sm font-bold w-5 text-center">{{ $quantidades[$produto->id] ?? 1 }}</span>
+                                        <button wire:click.stop="incrementarHome({{ $produto->id }})"
+                                            x-on:click="clearTimeout(timer); timer = setTimeout(() => show = false, 2000)"
+                                            class="w-7 h-7 flex items-center justify-center cursor-pointer">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 4v16m8-8H4" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <button x-show="!show"
+                                        x-transition:enter="transition ease-out duration-300 delay-100"
+                                        x-transition:enter-start="opacity-0 scale-75"
+                                        x-transition:enter-end="opacity-100 scale-100"
+                                        wire:click.stop="{{ in_array($produto->id, $adicionados) ? 'incrementarHome(' . $produto->id . ')' : 'adicionarRapido(' . $produto->id . ')' }}"
+                                        x-on:click="show = true; clearTimeout(timer); timer = setTimeout(() => show = false, 2000)"
+                                        class="w-9 h-9 rounded-full text-white flex items-center justify-center shadow-md cursor-pointer"
+                                        style="background-color: {{ $tenant->primary_color ?? '#00b050' }}">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 4v16m8-8H4" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div class="flex flex-col flex-1">
+                                    <p class="text-sm font-bold text-gray-900">
+                                        R$ {{ number_format($produto->price, 2, ',', '.') }}
+                                    </p>
+
+                                    @if ($produto->original_price)
+                                        <p class="text-xs text-gray-400 line-through">
+                                            R$ {{ number_format($produto->original_price, 2, ',', '.') }}
+                                        </p>
                                     @endif
+
+                                    <p class="text-xs text-gray-600 mt-1 line-clamp-2 leading-tight">
+                                        {{ $produto->name }}
+                                    </p>
                                 </div>
                             </div>
                         @endforeach
-                    </div>
-
-                    <button type="button" id="left-ofertas" onclick="scrollProductLeft('ofertas')"
-                        class="hidden absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 transition-colors shadow-md z-10">
-                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 19l-7-7 7-7" />
-                        </svg>
-                    </button>
-
-                    <button type="button" id="right-ofertas" onclick="scrollProductRight('ofertas')"
-                        class="hidden absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 transition-colors shadow-md z-10">
-                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        @endif
-
-        {{-- ===== SEÇÕES POR CATEGORIA ===== --}}
-        @forelse($categorias as $categoria)
-            @if ($categoria->products->count() > 0)
-                <div id="categoria-{{ $categoria->slug }}">
-                    <div class="flex items-center justify-between mb-3">
-                        <h2 class="text-base font-bold text-gray-800">{{ $categoria->name }}</h2>
-                    </div>
-
-                    <div class="relative -mx-4 px-4">
-                        <div id="scroll-categoria-{{ $categoria->id }}"
-                            onscroll="handleProductScroll('categoria-{{ $categoria->id }}')"
-                            class="flex gap-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-2 scroll-smooth">
-
-                            @foreach ($categoria->products as $produto)
-                                @php
-                                    $imagens = is_array($produto->images) ? $produto->images : [];
-                                    $img = $imagens[0] ?? null;
-                                @endphp
-
-                                <div class="flex-shrink-0 w-40 bg-white rounded-2xl p-3 shadow-sm border border-gray-100 cursor-pointer flex flex-col"
-                                    onclick="window.location='{{ url($tenant->slug . '/produto/' . $produto->slug) }}'">
-
-                                    <div class="relative">
-                                        @if ($produto->discount_percentage > 0)
-                                            <span
-                                                class="absolute top-0 left-0 text-xs font-bold text-white px-1.5 py-0.5 rounded-lg"
-                                                style="background-color: {{ $tenant->primary_color ?? '#00b050' }}">
-                                                -{{ $produto->discount_percentage }}%
-                                            </span>
-                                        @endif
-
-                                        @if ($img)
-                                            <img src="{{ asset('storage/' . $img) }}" alt="{{ $produto->name }}"
-                                                class="w-full h-28 object-contain">
-                                        @else
-                                            <div
-                                                class="w-full h-28 bg-gray-100 rounded-xl flex items-center justify-center">
-                                                <svg class="w-8 h-8 text-gray-300" fill="none"
-                                                    stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="1.5"
-                                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                </svg>
-                                            </div>
-                                        @endif
-                                    </div>
-
-                                    <div class="flex flex-col flex-1">
-                                        <p
-                                            class="text-xs font-medium text-gray-700 mt-2 line-clamp-2 leading-tight uppercase">
-                                            {{ $produto->name }}
-                                        </p>
-
-                                        <div class="mt-auto pt-1">
-                                            <p class="text-sm font-bold text-gray-900">
-                                                R$ {{ number_format($produto->price, 2, ',', '.') }}
-                                            </p>
-
-                                            @if ($produto->original_price)
-                                                <p class="text-xs text-gray-400 line-through">
-                                                    R$ {{ number_format($produto->original_price, 2, ',', '.') }}
-                                                </p>
-                                            @endif
-                                        </div>
-                                    </div>
-
-                                    <div class="mt-2" onclick="event.stopPropagation()">
-                                        @if (in_array($produto->id, $adicionados))
-                                            <div class="w-full flex items-center justify-between rounded-xl border px-1 py-0.5"
-                                                style="border-color: {{ $tenant->primary_color ?? '#00b050' }}">
-
-                                                <button wire:click.stop="decrementarHome({{ $produto->id }})"
-                                                    class="w-6 h-6 flex items-center justify-center rounded-lg transition-colors duration-200"
-                                                    style="color: {{ $tenant->primary_color ?? '#00b050' }}">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M20 12H4" />
-                                                    </svg>
-                                                </button>
-
-                                                <span class="text-xs font-bold"
-                                                    style="color: {{ $tenant->primary_color ?? '#00b050' }}">
-                                                    {{ $quantidades[$produto->id] ?? 1 }}
-                                                </span>
-
-                                                <button wire:click.stop="incrementarHome({{ $produto->id }})"
-                                                    class="w-6 h-6 flex items-center justify-center rounded-lg transition-colors duration-200"
-                                                    style="color: {{ $tenant->primary_color ?? '#00b050' }}">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M12 4v16m8-8H4" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        @else
-                                            <button wire:click.stop="adicionarRapido({{ $produto->id }})"
-                                                class="w-full py-1.5 rounded-xl text-xs font-semibold text-white transition-all duration-200 flex items-center justify-center gap-1"
-                                                style="background-color: {{ $tenant->primary_color ?? '#00b050' }}">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                                </svg>
-                                                Adicionar
-                                            </button>
-                                        @endif
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-
-                        <button type="button" id="left-categoria-{{ $categoria->id }}"
-                            onclick="scrollProductLeft('categoria-{{ $categoria->id }}')"
-                            class="hidden absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 transition-colors shadow-md z-10">
-                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </button>
-
-                        <button type="button" id="right-categoria-{{ $categoria->id }}"
-                            onclick="scrollProductRight('categoria-{{ $categoria->id }}')"
-                            class="hidden absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 transition-colors shadow-md z-10">
-                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 5l7 7-7 7" />
-                            </svg>
-                        </button>
                     </div>
                 </div>
             @endif
@@ -349,8 +322,10 @@
 
     {{-- ===== BARRA INFERIOR CARRINHO ===== --}}
     @if ($totalItens > 0)
-        <div class="fixed bottom-0 left-0 right-0 z-50 px-4 pb-15">
-            <div class="max-w-2xl mx-auto rounded-2xl p-4 flex items-center justify-between shadow-2xl text-white"
+        {{-- MOBILE: barra flutuante, agora abre o drawer/tela cheia do carrinho --}}
+        <div class="md:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pb-15">
+            <button wire:click="$dispatch('abrirCarrinhoGlobal')"
+                class="w-full max-w-2xl mx-auto rounded-2xl p-4 flex items-center justify-between shadow-2xl text-white cursor-pointer"
                 style="background-color: {{ $tenant->primary_color ?? '#00b050' }}">
 
                 <div class="flex items-center gap-3">
@@ -360,7 +335,7 @@
                     </svg>
 
                     <div>
-                        <p class="text-sm font-bold">
+                        <p class="text-sm font-bold text-left">
                             {{ $totalItens }} {{ $totalItens == 1 ? 'item' : 'itens' }}
                         </p>
                     </div>
@@ -373,12 +348,11 @@
                     </p>
                 </div>
 
-                <a href="{{ url($tenant->slug . '/carrinho') }}"
-                    class="bg-white rounded-xl px-4 py-2 text-sm font-bold transition-all duration-200"
+                <span class="bg-white rounded-xl px-4 py-2 text-sm font-bold"
                     style="color: {{ $tenant->primary_color ?? '#00b050' }}">
-                    Finalizar pedido →
-                </a>
-            </div>
+                    Ver carrinho →
+                </span>
+            </button>
         </div>
     @endif
 

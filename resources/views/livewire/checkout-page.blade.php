@@ -1,139 +1,198 @@
+@php
+    $primaryColor = $tenant->primary_color ?? '#00b050';
+@endphp
+
 <div class="bg-gray-50 min-h-screen pb-10">
 
-    <div class="px-4 py-3 flex items-center gap-3 ">
-        <a href="{{ url($tenant->slug . '/finalizar/metodo') }}"
-            class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
-            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    {{-- Barra topo --}}
+    <div class="px-4 py-4 flex items-center gap-3" style="background-color: {{ $primaryColor }}">
+        <a href="{{ url($tenant->slug) }}" class="text-white">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
         </a>
-        <h1 class="text-base font-bold text-gray-800">Insira seus dados</h1>
+        <h1 class="text-white font-bold">Voltar para loja</h1>
     </div>
 
-    <div class="max-w-2xl mx-auto px-4 py-4 space-y-4">
+    <div class="max-w-2xl mx-auto px-4 py-6">
 
-        {{-- Nome --}}
-        <div>
-            <label class="text-sm font-semibold text-gray-700 mb-1 block">
-                Nome <span class="text-red-500">*</span>
-            </label>
-            <input wire:model="nome" type="text" placeholder="Insira seu nome"
-                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none transition-all duration-200"
-                onfocus="this.style.borderColor='{{ $tenant->primary_color ?? '#00b050' }}'"
-                onblur="this.style.borderColor='rgb(229 231 235)'">
-            @error('nome')
-                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        {{-- Telefone --}}
-        <div>
-            <label class="text-sm font-semibold text-gray-700 mb-1 block">
-                Telefone <span class="text-red-500">*</span>
-            </label>
-            <input wire:model="telefone" type="tel" placeholder="(00) 00000-0000"
-                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none transition-all duration-200"
-                onfocus="this.style.borderColor='{{ $tenant->primary_color ?? '#00b050' }}'"
-                onblur="this.style.borderColor='rgb(229 231 235)'">
-            @error('telefone')
-                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        {{-- E-mail --}}
-        <div>
-            <label class="text-sm font-semibold text-gray-700 mb-1 block">E-mail</label>
-            <input wire:model="email" type="email" placeholder="Insira seu e-mail"
-                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none transition-all duration-200"
-                onfocus="this.style.borderColor='{{ $tenant->primary_color ?? '#00b050' }}'"
-                onblur="this.style.borderColor='rgb(229 231 235)'">
-        </div>
-
-        {{-- CPF --}}
-        <div>
-            <label class="text-sm font-semibold text-gray-700 mb-1 block">CPF</label>
-            <input wire:model="cpf" type="text" placeholder="Insira seu CPF"
-                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none transition-all duration-200"
-                onfocus="this.style.borderColor='{{ $tenant->primary_color ?? '#00b050' }}'"
-                onblur="this.style.borderColor='rgb(229 231 235)'">
-        </div>
-
-        {{-- Endereço se entrega --}}
-        @if ($tipoEntrega === 'entrega')
-            <div class="pt-2">
-                <p class="text-sm font-bold text-gray-700 mb-3">Endereço de entrega</p>
-                <div class="space-y-3">
-                    <div>
-                        <input wire:model="rua" type="text" placeholder="Rua *"
-                            class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none transition-all duration-200"
-                            onfocus="this.style.borderColor='{{ $tenant->primary_color ?? '#00b050' }}'"
-                            onblur="this.style.borderColor='rgb(229 231 235)'">
-                        @error('rua')
-                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <input wire:model="numero" type="text" placeholder="Número *"
-                                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none transition-all duration-200"
-                                onfocus="this.style.borderColor='{{ $tenant->primary_color ?? '#00b050' }}'"
-                                onblur="this.style.borderColor='rgb(229 231 235)'">
-                            @error('numero')
-                                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
-                            <input wire:model="bairro" type="text" placeholder="Bairro *"
-                                class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none transition-all duration-200"
-                                onfocus="this.style.borderColor='{{ $tenant->primary_color ?? '#00b050' }}'"
-                                onblur="this.style.borderColor='rgb(229 231 235)'">
-                            @error('bairro')
-                                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
-                    <div>
-                        <input wire:model="cidade" type="text" placeholder="Cidade *"
-                            class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none transition-all duration-200"
-                            onfocus="this.style.borderColor='{{ $tenant->primary_color ?? '#00b050' }}'"
-                            onblur="this.style.borderColor='rgb(229 231 235)'">
-                        @error('cidade')
-                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <input wire:model="referencia" type="text" placeholder="Ponto de referência"
-                        class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none transition-all duration-200"
-                        onfocus="this.style.borderColor='{{ $tenant->primary_color ?? '#00b050' }}'"
-                        onblur="this.style.borderColor='rgb(229 231 235)'">
-                </div>
+        {{-- Breadcrumb de steps --}}
+        <div class="flex items-center gap-4 mb-6">
+            <div class="flex-1">
+                <div class="h-1 rounded-full mb-2"
+                    style="background-color: {{ $step === 'agendamento' ? $primaryColor : '#e5e7eb' }}"></div>
+                <span class="text-sm font-semibold flex items-center gap-1"
+                    style="color: {{ $step === 'agendamento' ? $primaryColor : '#9ca3af' }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Agendamento
+                </span>
             </div>
+            <div class="flex-1">
+                <div class="h-1 rounded-full mb-2"
+                    style="background-color: {{ $step === 'pagamento' ? $primaryColor : '#e5e7eb' }}"></div>
+                <span class="text-sm font-semibold flex items-center gap-1"
+                    style="color: {{ $step === 'pagamento' ? $primaryColor : '#9ca3af' }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    Pagamento
+                </span>
+            </div>
+        </div>
+
+        @if ($step === 'agendamento')
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+
+                {{-- Abas Receber em casa / Retirar na loja --}}
+                <div class="flex border-b border-gray-100">
+                    <button wire:click="selecionarTipoEntrega('entrega')"
+                        class="flex-1 py-4 text-sm font-semibold border-b-2 transition-colors duration-200 cursor-pointer"
+                        style="{{ $tipoEntrega === 'entrega' ? 'color: ' . $primaryColor . '; border-color: ' . $primaryColor . ';' : 'color: #9ca3af; border-color: transparent;' }}">
+                        Receber em casa
+                    </button>
+                    <button wire:click="selecionarTipoEntrega('retirada')"
+                        class="flex-1 py-4 text-sm font-semibold border-b-2 transition-colors duration-200 cursor-pointer"
+                        style="{{ $tipoEntrega === 'retirada' ? 'color: ' . $primaryColor . '; border-color: ' . $primaryColor . ';' : 'color: #9ca3af; border-color: transparent;' }}">
+                        Retirar na loja
+                    </button>
+                </div>
+
+                @if ($tipoEntrega === 'entrega')
+                    {{-- Campos de endereço --}}
+                    <div class="p-5 space-y-4">
+                        <div>
+                            <label class="text-xs font-semibold text-gray-500">Rua</label>
+                            <input type="text" wire:model="rua"
+                                class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none"
+                                style="focus:border-color: {{ $primaryColor }}">
+                            @error('rua')
+                                <span class="text-xs text-red-500">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs font-semibold text-gray-500">Número</label>
+                                <input type="text" wire:model="numero"
+                                    class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none">
+                                @error('numero')
+                                    <span class="text-xs text-red-500">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-gray-500">Bairro</label>
+                                <input type="text" wire:model="bairro"
+                                    class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none">
+                                @error('bairro')
+                                    <span class="text-xs text-red-500">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-gray-500">Cidade</label>
+                            <input type="text" wire:model="cidade"
+                                class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none">
+                            @error('cidade')
+                                <span class="text-xs text-red-500">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-gray-500">Referência (opcional)</label>
+                            <input type="text" wire:model="referencia"
+                                class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none">
+                        </div>
+                    </div>
+                @else
+                    {{-- Retirada na loja --}}
+                    <div class="p-5">
+                        <p class="text-xs font-semibold text-gray-500 mb-2">Retirar em:</p>
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            <p class="text-sm text-gray-700">
+                                {{ $tenant->address ?? 'Endereço da loja não configurado' }}</p>
+                        </div>
+                    </div>
+                @endif
+            </div>
+
+            <button wire:click="irParaPagamento"
+                class="w-full mt-6 py-3 rounded-2xl text-sm font-bold text-white cursor-pointer"
+                style="background-color: {{ $primaryColor }}">
+                Continuar →
+            </button>
         @endif
 
-        {{-- Resumo --}}
-        <div class="bg-white rounded-2xl p-4 border border-gray-100 space-y-2">
-            <p class="text-xs font-bold text-gray-500 uppercase">Resumo do pedido</p>
-            @foreach ($cartItems as $item)
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">{{ $item->quantity }}x {{ $item->product->name }}</span>
-                    <span class="font-medium">R$
-                        {{ number_format($item->product->price * $item->quantity, 2, ',', '.') }}</span>
-                </div>
-            @endforeach
-            <div class="border-t border-gray-100 pt-2 flex justify-between font-bold">
-                <span>Total</span>
-                <span>R$ {{ number_format($total, 2, ',', '.') }}</span>
-            </div>
-            <div class="text-xs text-gray-500 space-y-0.5 pt-1">
-                <p>Entrega: {{ $tipoEntrega === 'entrega' ? 'Em domicílio' : 'Retirada no local' }}</p>
-                <p>Pagamento: {{ ucfirst($metodoPagamento) }}</p>
-            </div>
-        </div>
+        @if ($step === 'pagamento')
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden p-5 space-y-5">
 
-        <button wire:click="confirmar"
-            class="w-full py-4 rounded-2xl text-sm font-bold text-white transition-all duration-200"
-            style="background-color: {{ $tenant->primary_color ?? '#00b050' }}">
-            Confirmar
-        </button>
+                {{-- Dados do cliente --}}
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500">Nome</label>
+                        <input type="text" wire:model="nome"
+                            class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none">
+                        @error('nome')
+                            <span class="text-xs text-red-500">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500">Telefone</label>
+                        <input type="text" wire:model="telefone"
+                            class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none">
+                        @error('telefone')
+                            <span class="text-xs text-red-500">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-sm font-semibold text-gray-700 mb-2">Forma de pagamento</p>
+                    <div class="space-y-2">
+                        @foreach (['pix' => 'Pix', 'cartao' => 'Cartão', 'dinheiro' => 'Dinheiro'] as $key => $label)
+                            <button type="button" wire:click="selecionarMetodoPagamento('{{ $key }}')"
+                                class="w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-medium transition-colors duration-200 cursor-pointer"
+                                style="{{ $metodoPagamento === $key ? 'border-color: ' . $primaryColor . '; background-color: ' . $primaryColor . '10;' : 'border-color: #e5e7eb;' }}">
+                                {{ $label }}
+                                @if ($metodoPagamento === $key)
+                                    <svg class="w-5 h-5" fill="none" stroke="{{ $primaryColor }}"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                @endif
+                            </button>
+                        @endforeach
+                    </div>
+                    @error('metodoPagamento')
+                        <span class="text-xs text-red-500">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+                <button wire:click="voltarParaAgendamento"
+                    class="px-5 py-3 rounded-2xl text-sm font-bold border border-gray-200 text-gray-600 cursor-pointer">
+                    ← Voltar
+                </button>
+                <button wire:click="confirmar"
+                    class="flex-1 py-3 rounded-2xl text-sm font-bold text-white cursor-pointer"
+                    style="background-color: {{ $primaryColor }}">
+                    Confirmar pedido →
+                </button>
+            </div>
+        @endif
 
     </div>
 </div>
