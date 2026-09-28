@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Banner;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class HomePage extends Component
@@ -28,8 +29,27 @@ class HomePage extends Component
         $this->atualizarCarrinho();
     }
 
+    /**
+     * Cliente logado E pertencente a esta loja.
+     */
+    protected function clienteLogado(): bool
+    {
+        $cliente = Auth::guard('cliente')->user();
+
+        return $cliente !== null
+            && (int) $cliente->tenant_id === (int) $this->tenant->id;
+    }
+
     public function atualizarCarrinho(): void
     {
+        if (! $this->clienteLogado()) {
+            $this->totalItens = 0;
+            $this->totalValor = 0;
+            $this->adicionados = [];
+            $this->quantidades = [];
+            return;
+        }
+
         $cart = Cart::with('items.product')
             ->where('user_id', $this->tenant->id)
             ->where('session_id', session()->getId())
@@ -49,6 +69,11 @@ class HomePage extends Component
 
     public function adicionarRapido(int $productId): void
     {
+        if (! $this->clienteLogado()) {
+            $this->dispatch('abrir-modal-login');
+            return;
+        }
+
         $sessionId = session()->getId();
 
         $cart = Cart::firstOrCreate([
@@ -77,6 +102,11 @@ class HomePage extends Component
 
     public function incrementarHome(int $productId): void
     {
+        if (! $this->clienteLogado()) {
+            $this->dispatch('abrir-modal-login');
+            return;
+        }
+
         $cart = Cart::where('user_id', $this->tenant->id)
             ->where('session_id', session()->getId())
             ->first();
@@ -95,6 +125,11 @@ class HomePage extends Component
 
     public function decrementarHome(int $productId): void
     {
+        if (! $this->clienteLogado()) {
+            $this->dispatch('abrir-modal-login');
+            return;
+        }
+
         $cart = Cart::where('user_id', $this->tenant->id)
             ->where('session_id', session()->getId())
             ->first();
@@ -149,7 +184,9 @@ class HomePage extends Component
             ->orderBy('order')
             ->get();
 
-        return view('livewire.home-page', compact('categorias', 'produtosOferta', 'banners'))
+        $clienteLogado = $this->clienteLogado();
+
+        return view('livewire.home-page', compact('categorias', 'produtosOferta', 'banners', 'clienteLogado'))
             ->layout('components.layouts.app', ['tenant' => $this->tenant]);
     }
 }

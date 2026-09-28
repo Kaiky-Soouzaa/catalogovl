@@ -1,5 +1,6 @@
 @php
     $primaryColor = $tenant->primary_color ?? '#00b050';
+    $logoUrl = $tenant->logo_url ? Storage::url($tenant->logo_url) : asset('assets/images/vl-sistemas.png');
 @endphp
 
 <div class="bg-gray-50 min-h-screen pb-24">
@@ -44,10 +45,12 @@
                         @endphp
 
                         <div class="cursor-pointer"
-                            onclick="window.location='{{ url($tenant->slug . '/produto/' . $produto->slug) }}'">
+                            @if ($clienteLogado) onclick="window.location='{{ url($tenant->slug . '/produto/' . $produto->slug) }}'"
+                            @else
+                                onclick="Livewire.dispatch('abrir-modal-login')" @endif>
 
                             <div class="relative">
-                                @if ($produto->discount_percentage > 0)
+                                @if ($clienteLogado && $produto->discount_percentage > 0)
                                     <span
                                         class="absolute top-0 left-0 text-xs font-bold text-white px-1.5 py-0.5 rounded-lg"
                                         style="background-color: {{ $primaryColor }}">
@@ -69,50 +72,71 @@
                                 @endif
                             </div>
 
-                            <div class="relative z-10 flex justify-end mt-1 mb-1" x-data="{ show: false, timer: null }">
-                                <div x-show="show" x-transition
-                                    class="flex items-center gap-1 rounded-full text-white shadow-md px-1 py-1"
-                                    style="background-color: {{ $primaryColor }}" onclick="event.stopPropagation()">
-                                    <button wire:click.stop="decrementarHome({{ $produto->id }})"
-                                        x-on:click="clearTimeout(timer); timer = setTimeout(() => show = false, 2000)"
-                                        class="w-7 h-7 flex items-center justify-center cursor-pointer">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M20 12H4" />
-                                        </svg>
-                                    </button>
-                                    <span
-                                        class="text-sm font-bold w-5 text-center">{{ $quantidades[$produto->id] ?? 1 }}</span>
-                                    <button wire:click.stop="incrementarHome({{ $produto->id }})"
-                                        x-on:click="clearTimeout(timer); timer = setTimeout(() => show = false, 2000)"
-                                        class="w-7 h-7 flex items-center justify-center cursor-pointer">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
+                            @if ($clienteLogado)
+                                <div class="relative z-10 flex justify-end mt-1 mb-1" x-data="{ show: false, timer: null }">
+                                    <div x-show="show" x-transition
+                                        class="flex items-center gap-1 rounded-full text-white shadow-md px-1 py-1"
+                                        style="background-color: {{ $primaryColor }}"
+                                        onclick="event.stopPropagation()">
+                                        <button wire:click.stop="decrementarHome({{ $produto->id }})"
+                                            x-on:click="clearTimeout(timer); timer = setTimeout(() => show = false, 2000)"
+                                            class="w-7 h-7 flex items-center justify-center cursor-pointer">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M20 12H4" />
+                                            </svg>
+                                        </button>
+                                        <span
+                                            class="text-sm font-bold w-5 text-center">{{ $quantidades[$produto->id] ?? 1 }}</span>
+                                        <button wire:click.stop="incrementarHome({{ $produto->id }})"
+                                            x-on:click="clearTimeout(timer); timer = setTimeout(() => show = false, 2000)"
+                                            class="w-7 h-7 flex items-center justify-center cursor-pointer">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 4v16m8-8H4" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <button x-show="!show"
+                                        wire:click.stop="{{ in_array($produto->id, $adicionados) ? 'incrementarHome(' . $produto->id . ')' : 'adicionarRapido(' . $produto->id . ')' }}"
+                                        x-on:click="show = true; clearTimeout(timer); timer = setTimeout(() => show = false, 2000)"
+                                        class="w-9 h-9 rounded-full text-white flex items-center justify-center shadow-md cursor-pointer"
+                                        style="background-color: {{ $primaryColor }}">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M12 4v16m8-8H4" />
                                         </svg>
                                     </button>
                                 </div>
-                                <button x-show="!show"
-                                    wire:click.stop="{{ in_array($produto->id, $adicionados) ? 'incrementarHome(' . $produto->id . ')' : 'adicionarRapido(' . $produto->id . ')' }}"
-                                    x-on:click="show = true; clearTimeout(timer); timer = setTimeout(() => show = false, 2000)"
-                                    class="w-9 h-9 rounded-full text-white flex items-center justify-center shadow-md cursor-pointer"
-                                    style="background-color: {{ $primaryColor }}">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 4v16m8-8H4" />
-                                    </svg>
-                                </button>
-                            </div>
+                            @else
+                                <div class="relative z-10 flex justify-end mt-1 mb-1">
+                                    <button type="button"
+                                        onclick="event.stopPropagation(); Livewire.dispatch('abrir-modal-login')"
+                                        class="w-9 h-9 rounded-full text-white flex items-center justify-center shadow-md cursor-pointer"
+                                        style="background-color: {{ $primaryColor }}">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 4v16m8-8H4" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            @endif
 
                             <div class="mt-1">
-                                <p class="text-sm font-bold text-gray-900">
-                                    R$ {{ number_format($produto->price, 2, ',', '.') }}
-                                </p>
-                                @if ($produto->original_price)
-                                    <p class="text-xs text-gray-400 line-through">
-                                        R$ {{ number_format($produto->original_price, 2, ',', '.') }}
+                                @if ($clienteLogado)
+                                    <p class="text-sm font-bold text-gray-900">
+                                        R$ {{ number_format($produto->price, 2, ',', '.') }}
+                                    </p>
+                                    @if ($produto->original_price)
+                                        <p class="text-xs text-gray-400 line-through">
+                                            R$ {{ number_format($produto->original_price, 2, ',', '.') }}
+                                        </p>
+                                    @endif
+                                @else
+                                    <p class="text-xs font-semibold" style="color: {{ $primaryColor }}">
+                                        Entrar para ver o preço
                                     </p>
                                 @endif
                                 <p class="text-xs text-gray-600 mt-1 line-clamp-2 leading-tight">
@@ -125,4 +149,7 @@
             @endif
         </div>
     </div>
+
+    {{-- Modal de login (esta página usa layout sem navbar, então o modal precisa estar aqui) --}}
+    <livewire:auth-modal :tenant-id="$tenant->id" :primary-color="$primaryColor" :logo-url="$logoUrl" />
 </div>

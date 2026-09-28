@@ -36,7 +36,7 @@
 
                 {{-- Itens resumidos --}}
                 <p class="text-xs text-gray-500 mb-3 line-clamp-1">
-                    {{ $order->items->map(fn($i) => $i->quantity . 'x ' . $i->product->name)->join(', ') }}
+                    {{ $order->items->map(fn($i) => $i->quantity . 'x ' . ($i->product?->name ?? 'Produto removido'))->join(', ') }}
                 </p>
 
                 <div class="flex items-center justify-between">

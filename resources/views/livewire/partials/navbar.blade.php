@@ -24,7 +24,7 @@
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input wire:model.live.debounce.300ms="busca" type="text" placeholder="Buscar produtos..."
-                    class="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-xl text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:bg-white transition-all duration-200"
+                    class="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-xl text-base sm:text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:bg-white transition-all duration-200"
                     style="border: 2px solid transparent;"
                     onfocus="this.style.borderColor='{{ $primaryColor }}'; this.style.backgroundColor='white';"
                     onblur="this.style.borderColor='transparent'; this.style.backgroundColor='rgb(243 244 246)';"
@@ -70,16 +70,18 @@
                                         {{-- <p class="text-xs text-gray-400">{{ $produto->category->name ?? '' }}</p> --}}
                                     </div>
 
-                                    <div class="text-right flex-shrink-0">
-                                        <p class="text-sm font-bold" style="color: {{ $primaryColor }}">
-                                            R$ {{ number_format($produto->price, 2, ',', '.') }}
-                                        </p>
-                                        @if ($produto->original_price)
-                                            <p class="text-xs text-gray-400 line-through">
-                                                R$ {{ number_format($produto->original_price, 2, ',', '.') }}
+                                    @if ($clienteLogado)
+                                        <div class="text-right flex-shrink-0">
+                                            <p class="text-sm font-bold" style="color: {{ $primaryColor }}">
+                                                R$ {{ number_format($produto->price, 2, ',', '.') }}
                                             </p>
-                                        @endif
-                                    </div>
+                                            @if ($produto->original_price)
+                                                <p class="text-xs text-gray-400 line-through">
+                                                    R$ {{ number_format($produto->original_price, 2, ',', '.') }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                    @endif
 
                                 </a>
                             @endforeach
@@ -110,8 +112,47 @@
                     </button>
                 @endif
 
+                {{-- Login / conta do cliente --}}
+                <div class="flex items-center relative" x-data="{ menu: false }" @click.outside="menu = false">
+                    @if ($clienteLogado)
+                        <button type="button" @click="menu = !menu"
+                            class="flex items-center gap-1.5 border border-gray-300 rounded-full px-3 sm:px-4 py-2 text-sm font-bold text-gray-700 cursor-pointer">
+                            <svg class="w-5 h-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                            </svg>
+                            <span class="hidden sm:inline">Olá, {{ Auth::guard('cliente')->user()->nome }}</span>
+                        </button>
+
+                        <div x-show="menu" x-transition style="display: none;"
+                            class="absolute right-0 top-full mt-2 w-44 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50">
+                            <a href="{{ url($tenant->slug . '/pedidos') }}"
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                Meus pedidos
+                            </a>
+                            <button type="button" wire:click="sair"
+                                class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 cursor-pointer">
+                                Sair
+                            </button>
+                        </div>
+                    @else
+                        <button type="button" wire:click="$dispatch('abrir-modal-login')"
+                            class="flex items-center gap-1.5 border border-gray-300 rounded-full px-3 sm:px-4 py-2 text-sm font-bold text-gray-600 cursor-pointer transition-colors duration-200"
+                            onmouseover="this.style.borderColor='{{ $primaryColor }}'; this.style.color='{{ $primaryColor }}';"
+                            onmouseout="this.style.borderColor=''; this.style.color='';">
+                            <svg class="w-5 h-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                            </svg>
+                            <span class="hidden sm:inline">Olá, Entrar</span>
+                        </button>
+                    @endif
+                </div>
+
                 {{-- Pedido --}}
-                <a class="font-medium flex items-center text-gray-500 transition-colors duration-200"
+                {{-- <a class="font-medium flex items-center text-gray-500 transition-colors duration-200"
                     href="{{ url($tenant->slug . '/pedidos') }}" onmouseover="this.style.color='{{ $primaryColor }}';"
                     onmouseout="this.style.color='';">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -120,10 +161,10 @@
                             d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
                     </svg>
                     <span class="mr-1 hidden sm:inline">Pedido</span>
-                </a>
+                </a> --}}
 
                 {{-- Hamburguer mobile --}}
-                @if (request()->is($tenant->slug))
+                @if ($mostrarCategorias)
                     <button id="menu-toggle" onclick="toggleMenu()"
                         class="md:hidden flex justify-center items-center w-9 h-9 rounded-lg border transition-colors duration-200"
                         style="border-color: {{ $primaryColor }}; color: {{ $primaryColor }};"
@@ -150,7 +191,7 @@
         {{-- ===== LINHA 2: Categorias Desktop ===== --}}
 
 
-        @if (request()->is($tenant->slug))
+        @if ($mostrarCategorias)
 
             <div class="hidden md:block border-t border-gray-100 w-full">
                 <div class="max-w-[85rem] mx-auto px-4 md:px-6 lg:px-8 overflow-x-auto">
@@ -173,7 +214,7 @@
 
 
         {{-- ===== MENU MOBILE ===== --}}
-        @if (request()->is($tenant->slug))
+        @if ($mostrarCategorias)
             <div id="mobile-menu" class="md:hidden hidden border-t border-gray-100 w-full bg-white">
                 <div class="max-w-[85rem] mx-auto px-4 py-2 flex flex-col">
                     @foreach ($categorias as $categoria)
@@ -309,6 +350,8 @@
             </a>
         </div>
     </div>
+
+    <livewire:auth-modal :tenant-id="$tenant->id" :primary-color="$primaryColor" :logo-url="$logoUrl" />
 
     <script>
         function toggleMenu() {

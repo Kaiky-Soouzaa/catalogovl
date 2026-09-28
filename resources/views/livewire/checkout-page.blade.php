@@ -67,7 +67,7 @@
                         <div>
                             <label class="text-xs font-semibold text-gray-500">Rua</label>
                             <input type="text" wire:model="rua"
-                                class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none"
+                                class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-base sm:text-sm focus:outline-none"
                                 style="focus:border-color: {{ $primaryColor }}">
                             @error('rua')
                                 <span class="text-xs text-red-500">{{ $message }}</span>
@@ -77,7 +77,7 @@
                             <div>
                                 <label class="text-xs font-semibold text-gray-500">Número</label>
                                 <input type="text" wire:model="numero"
-                                    class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none">
+                                    class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-base sm:text-sm focus:outline-none">
                                 @error('numero')
                                     <span class="text-xs text-red-500">{{ $message }}</span>
                                 @enderror
@@ -85,7 +85,7 @@
                             <div>
                                 <label class="text-xs font-semibold text-gray-500">Bairro</label>
                                 <input type="text" wire:model="bairro"
-                                    class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none">
+                                    class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-base sm:text-sm focus:outline-none">
                                 @error('bairro')
                                     <span class="text-xs text-red-500">{{ $message }}</span>
                                 @enderror
@@ -94,7 +94,7 @@
                         <div>
                             <label class="text-xs font-semibold text-gray-500">Cidade</label>
                             <input type="text" wire:model="cidade"
-                                class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none">
+                                class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-base sm:text-sm focus:outline-none">
                             @error('cidade')
                                 <span class="text-xs text-red-500">{{ $message }}</span>
                             @enderror
@@ -102,7 +102,7 @@
                         <div>
                             <label class="text-xs font-semibold text-gray-500">Referência (opcional)</label>
                             <input type="text" wire:model="referencia"
-                                class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none">
+                                class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-base sm:text-sm focus:outline-none">
                         </div>
                     </div>
                 @else
@@ -142,7 +142,7 @@
                     <div>
                         <label class="text-xs font-semibold text-gray-500">Nome</label>
                         <input type="text" wire:model="nome"
-                            class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none">
+                            class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-base sm:text-sm focus:outline-none">
                         @error('nome')
                             <span class="text-xs text-red-500">{{ $message }}</span>
                         @enderror
@@ -150,7 +150,7 @@
                     <div>
                         <label class="text-xs font-semibold text-gray-500">Telefone</label>
                         <input type="text" wire:model="telefone"
-                            class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none">
+                            class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl text-base sm:text-sm focus:outline-none">
                         @error('telefone')
                             <span class="text-xs text-red-500">{{ $message }}</span>
                         @enderror

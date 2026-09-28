@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Partials;
 
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use App\Models\Category;
 use App\Models\Product;
@@ -20,6 +21,10 @@ class Navbar extends Component
     public bool $carrinhoAberto = false;
     public array $cartItensDetalhe = [];
 
+    // Decidido uma única vez no mount(): nas atualizações do Livewire a
+    // requisição é /livewire/update, então request()->is() não serve no blade.
+    public bool $mostrarCategorias = false;
+
     protected $listeners = [
         'cartUpdated'         => 'atualizarCarrinho',
         'abrirCarrinhoGlobal' => 'abrirCarrinho',
@@ -33,19 +38,54 @@ class Navbar extends Component
             $this->tenant = null;
         }
 
+        $this->mostrarCategorias = $this->tenant !== null
+            && request()->is($this->tenant->slug);
+
         $this->atualizarCarrinho();
+    }
+
+    /**
+     * Cliente logado E pertencente a esta loja.
+     */
+    protected function clienteLogado(): bool
+    {
+        $cliente = Auth::guard('cliente')->user();
+
+        return $this->tenant !== null
+            && $cliente !== null
+            && (int) $cliente->tenant_id === (int) $this->tenant->id;
+    }
+
+    /**
+     * Carrinho do cliente logado (null para visitante).
+     */
+    protected function carrinhoAtual(): ?Cart
+    {
+        if (! $this->clienteLogado()) {
+            return null;
+        }
+
+        return Cart::where('user_id', $this->tenant->id)
+            ->where('session_id', session()->getId())
+            ->first();
     }
 
     public function atualizarCarrinho(): void
     {
-        if (!$this->tenant) return;
+        if (! $this->tenant || ! $this->clienteLogado()) {
+            $this->totalItens = 0;
+            $this->totalValor = 0;
+            $this->cartItensDetalhe = [];
+            return;
+        }
 
         $cart = Cart::with('items.product')
             ->where('user_id', $this->tenant->id)
             ->where('session_id', session()->getId())
             ->first();
 
-        $this->totalItens = $cart ? $cart->items->sum('quantity') : 0;
+        // Quantidade de produtos DIFERENTES (não a soma das unidades)
+        $this->totalItens = $cart ? $cart->items->count() : 0;
         $this->totalValor = $cart ? $cart->items->sum(fn($i) => $i->product->price * $i->quantity) : 0;
 
         $this->cartItensDetalhe = $cart
@@ -63,6 +103,11 @@ class Navbar extends Component
 
     public function abrirCarrinho(): void
     {
+        if (! $this->clienteLogado()) {
+            $this->dispatch('abrir-modal-login');
+            return;
+        }
+
         $this->carrinhoAberto = true;
     }
 
@@ -73,11 +118,9 @@ class Navbar extends Component
 
     public function incrementarItem(int $productId): void
     {
-        $cart = Cart::where('user_id', $this->tenant->id)
-            ->where('session_id', session()->getId())
-            ->first();
+        $cart = $this->carrinhoAtual();
 
-        if (!$cart) return;
+        if (! $cart) return;
 
         CartItem::where('cart_id', $cart->id)
             ->where('product_id', $productId)
@@ -89,17 +132,15 @@ class Navbar extends Component
 
     public function decrementarItem(int $productId): void
     {
-        $cart = Cart::where('user_id', $this->tenant->id)
-            ->where('session_id', session()->getId())
-            ->first();
+        $cart = $this->carrinhoAtual();
 
-        if (!$cart) return;
+        if (! $cart) return;
 
         $item = CartItem::where('cart_id', $cart->id)
             ->where('product_id', $productId)
             ->first();
 
-        if (!$item) return;
+        if (! $item) return;
 
         if ($item->quantity > 1) {
             $item->decrement('quantity');
@@ -113,11 +154,9 @@ class Navbar extends Component
 
     public function removerItem(int $productId): void
     {
-        $cart = Cart::where('user_id', $this->tenant->id)
-            ->where('session_id', session()->getId())
-            ->first();
+        $cart = $this->carrinhoAtual();
 
-        if (!$cart) return;
+        if (! $cart) return;
 
         CartItem::where('cart_id', $cart->id)
             ->where('product_id', $productId)
@@ -138,6 +177,18 @@ class Navbar extends Component
         $this->mostrarResultados = false;
     }
 
+    /**
+     * Encerra o login do cliente. Não usa session()->invalidate() para não
+     * derrubar também o login do painel admin, caso esteja aberto no mesmo navegador.
+     */
+    public function sair(): void
+    {
+        Auth::guard('cliente')->logout();
+        session()->regenerateToken();
+
+        $this->redirect(url($this->tenant->slug), navigate: false);
+    }
+
     public function render()
     {
         $categorias = Category::where('is_active', true)->orderBy('name')->get();
@@ -152,6 +203,8 @@ class Navbar extends Component
                 ->get();
         }
 
-        return view('livewire.partials.navbar', compact('tenant', 'categorias', 'resultados'));
+        $clienteLogado = $this->clienteLogado();
+
+        return view('livewire.partials.navbar', compact('tenant', 'categorias', 'resultados', 'clienteLogado'));
     }
 }

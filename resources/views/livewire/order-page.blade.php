@@ -90,7 +90,8 @@
                     <div class="flex justify-between items-start">
                         <div class="flex gap-2">
                             <span class="text-sm text-gray-500">{{ $item->quantity }}x</span>
-                            <span class="text-sm font-medium text-gray-800">{{ $item->product->name }}</span>
+                            <span
+                                class="text-sm font-medium text-gray-800">{{ $item->product?->name ?? 'Produto removido' }}</span>
                         </div>
                         <span class="text-sm font-medium text-gray-800">
                             R$ {{ number_format($item->total_amount, 2, ',', '.') }}

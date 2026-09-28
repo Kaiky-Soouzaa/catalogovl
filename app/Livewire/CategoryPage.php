@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Category;
 use App\Models\Cart;
 use App\Models\CartItem;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class CategoryPage extends Component
@@ -29,8 +30,25 @@ class CategoryPage extends Component
         $this->atualizarCarrinho();
     }
 
+    /**
+     * Cliente logado E pertencente a esta loja.
+     */
+    protected function clienteLogado(): bool
+    {
+        $cliente = Auth::guard('cliente')->user();
+
+        return $cliente !== null
+            && (int) $cliente->tenant_id === (int) $this->tenant->id;
+    }
+
     public function atualizarCarrinho(): void
     {
+        if (! $this->clienteLogado()) {
+            $this->adicionados = [];
+            $this->quantidades = [];
+            return;
+        }
+
         $cart = Cart::with('items')
             ->where('user_id', $this->tenant->id)
             ->where('session_id', session()->getId())
@@ -47,6 +65,11 @@ class CategoryPage extends Component
 
     public function adicionarRapido(int $productId): void
     {
+        if (! $this->clienteLogado()) {
+            $this->dispatch('abrir-modal-login');
+            return;
+        }
+
         $cart = Cart::firstOrCreate([
             'user_id'    => $this->tenant->id,
             'session_id' => session()->getId(),
@@ -73,6 +96,11 @@ class CategoryPage extends Component
 
     public function incrementarHome(int $productId): void
     {
+        if (! $this->clienteLogado()) {
+            $this->dispatch('abrir-modal-login');
+            return;
+        }
+
         $cart = Cart::where('user_id', $this->tenant->id)
             ->where('session_id', session()->getId())
             ->first();
@@ -89,6 +117,11 @@ class CategoryPage extends Component
 
     public function decrementarHome(int $productId): void
     {
+        if (! $this->clienteLogado()) {
+            $this->dispatch('abrir-modal-login');
+            return;
+        }
+
         $cart = Cart::where('user_id', $this->tenant->id)
             ->where('session_id', session()->getId())
             ->first();
@@ -118,7 +151,9 @@ class CategoryPage extends Component
             ->orderBy('name')
             ->get();
 
-        return view('livewire.category-page', compact('produtos'))
+        $clienteLogado = $this->clienteLogado();
+
+        return view('livewire.category-page', compact('produtos', 'clienteLogado'))
             ->layout('components.layouts.checkout', ['tenant' => $this->tenant]);
     }
 }
