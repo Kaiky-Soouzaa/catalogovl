@@ -8,6 +8,7 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use App\Services\PrecoCliente;
 
 class OfertasPage extends Component
 {
@@ -141,15 +142,21 @@ class OfertasPage extends Component
 
     public function render()
     {
-        $produtos = Product::where('is_active', true)
-            ->where('on_sale', true)
-            ->whereNotNull('original_price')
-            ->orderBy('name')
-            ->get();
-
         $clienteLogado = $this->clienteLogado();
+        $precos = PrecoCliente::para($clienteLogado ? Auth::guard('cliente')->user() : null);
+        $idsNegociados = $precos->idsNegociadosComDesconto();
 
-        return view('livewire.ofertas-page', compact('produtos', 'clienteLogado'))
+        $produtos = Product::where('is_active', true)
+            ->where(function ($q) use ($idsNegociados) {
+                $q->where(function ($g) {
+                    $g->where('on_sale', true)->whereNotNull('original_price');
+                })->orWhereIn('id', $idsNegociados);
+            })
+            ->orderBy('name')
+            ->get()
+            ->when($clienteLogado, fn($c) => $c->filter(fn($p) => $precos->emOferta($p))->values());
+
+        return view('livewire.ofertas-page', compact('produtos', 'clienteLogado', 'precos'))
             ->layout('components.layouts.checkout', ['tenant' => $this->tenant]);
     }
 }

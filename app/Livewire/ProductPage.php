@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use App\Services\PrecoCliente;
 
 class ProductPage extends Component
 {
@@ -104,7 +105,9 @@ class ProductPage extends Component
 
     public function render()
     {
-        return view('livewire.product-page')
+        $precos = PrecoCliente::para($this->clienteAtual());
+
+        return view('livewire.product-page', compact('precos'))
             ->layout('components.layouts.app', ['tenant' => $this->tenant]);
     }
 }

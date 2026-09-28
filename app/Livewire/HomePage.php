@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Banner;
+use App\Services\PrecoCliente;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -55,16 +56,20 @@ class HomePage extends Component
             ->where('session_id', session()->getId())
             ->first();
 
-        $this->totalItens = $cart ? $cart->items->sum('quantity') : 0;
-        $this->totalValor = $cart ? $cart->items->sum(fn($i) => $i->product->price * $i->quantity) : 0;
+        // Ignora itens cujo produto foi apagado
+        $itens = $cart ? $cart->items->filter(fn($i) => $i->product) : collect();
 
-        if ($cart) {
-            $this->adicionados = $cart->items->pluck('product_id')->toArray();
-            $this->quantidades = $cart->items->pluck('quantity', 'product_id')->toArray();
-        } else {
-            $this->adicionados = [];
-            $this->quantidades = [];
-        }
+        $precos = PrecoCliente::para(Auth::guard('cliente')->user());
+
+        // Quantidade de produtos DIFERENTES (não a soma das unidades)
+        $this->totalItens = $itens->count();
+        $this->totalValor = round(
+            $itens->sum(fn($i) => $precos->preco($i->product) * $i->quantity),
+            2
+        );
+
+        $this->adicionados = $itens->pluck('product_id')->values()->toArray();
+        $this->quantidades = $itens->pluck('quantity', 'product_id')->toArray();
     }
 
     public function adicionarRapido(int $productId): void
@@ -154,6 +159,10 @@ class HomePage extends Component
 
     public function render()
     {
+        $clienteLogado = $this->clienteLogado();
+        $precos = PrecoCliente::para($clienteLogado ? Auth::guard('cliente')->user() : null);
+        $idsNegociados = $precos->idsNegociadosComDesconto();
+
         $categorias = Category::with(['products' => function ($query) {
             $query->where('is_active', true)->orderBy('name');
         }])
@@ -161,12 +170,18 @@ class HomePage extends Component
             ->orderBy('name')
             ->get();
 
+        // Ofertas: as marcadas como on_sale para todos + as negociadas com desconto para este cliente.
+        // Para o cliente logado, o filtro final confere a regra dele (emOferta).
         $produtosOferta = Product::where('is_active', true)
-            ->where('on_sale', true)
-            ->whereNotNull('original_price')
+            ->where(function ($q) use ($idsNegociados) {
+                $q->where(function ($g) {
+                    $g->where('on_sale', true)->whereNotNull('original_price');
+                })->orWhereIn('id', $idsNegociados);
+            })
             ->when($this->busca, fn($q) => $q->where('name', 'like', "%{$this->busca}%"))
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->when($clienteLogado, fn($c) => $c->filter(fn($p) => $precos->emOferta($p))->values());
 
         if ($this->busca) {
             $categorias = Category::with(['products' => function ($query) {
@@ -184,9 +199,7 @@ class HomePage extends Component
             ->orderBy('order')
             ->get();
 
-        $clienteLogado = $this->clienteLogado();
-
-        return view('livewire.home-page', compact('categorias', 'produtosOferta', 'banners', 'clienteLogado'))
+        return view('livewire.home-page', compact('categorias', 'produtosOferta', 'banners', 'clienteLogado', 'precos'))
             ->layout('components.layouts.app', ['tenant' => $this->tenant]);
     }
 }

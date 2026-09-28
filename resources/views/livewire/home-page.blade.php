@@ -117,11 +117,11 @@
                                 onclick="Livewire.dispatch('abrir-modal-login')" @endif>
 
                             <div class="relative">
-                                @if ($clienteLogado && $produto->discount_percentage > 0)
+                                @if ($clienteLogado && $precos->desconto($produto) > 0)
                                     <span
                                         class="absolute top-0 left-0 text-xs font-bold text-white px-1.5 py-0.5 rounded-lg"
                                         style="background-color: {{ $tenant->primary_color ?? '#00b050' }}">
-                                        -{{ $produto->discount_percentage }}%
+                                        -{{ $precos->desconto($produto) }}%
                                     </span>
                                 @endif
 
@@ -199,12 +199,12 @@
                             <div class="flex flex-col flex-1">
                                 @if ($clienteLogado)
                                     <p class="text-sm font-bold text-gray-900">
-                                        R$ {{ number_format($produto->price, 2, ',', '.') }}
+                                        R$ {{ number_format($precos->preco($produto), 2, ',', '.') }}
                                     </p>
 
-                                    @if ($produto->original_price)
+                                    @if ($precos->precoOriginal($produto) && $precos->precoOriginal($produto) > $precos->preco($produto))
                                         <p class="text-xs text-gray-400 line-through">
-                                            R$ {{ number_format($produto->original_price, 2, ',', '.') }}
+                                            R$ {{ number_format($precos->precoOriginal($produto), 2, ',', '.') }}
                                         </p>
                                     @endif
                                 @else
@@ -254,11 +254,11 @@
                                     onclick="Livewire.dispatch('abrir-modal-login')" @endif>
 
                                 <div class="relative">
-                                    @if ($clienteLogado && $produto->discount_percentage > 0)
+                                    @if ($clienteLogado && $precos->desconto($produto) > 0)
                                         <span
                                             class="absolute top-0 left-0 text-xs font-bold text-white px-1.5 py-0.5 rounded-lg"
                                             style="background-color: {{ $tenant->primary_color ?? '#00b050' }}">
-                                            -{{ $produto->discount_percentage }}%
+                                            -{{ $precos->desconto($produto) }}%
                                         </span>
                                     @endif
 
@@ -338,12 +338,12 @@
                                 <div class="flex flex-col flex-1">
                                     @if ($clienteLogado)
                                         <p class="text-sm font-bold text-gray-900">
-                                            R$ {{ number_format($produto->price, 2, ',', '.') }}
+                                            R$ {{ number_format($precos->preco($produto), 2, ',', '.') }}
                                         </p>
 
-                                        @if ($produto->original_price)
+                                        @if ($precos->precoOriginal($produto) && $precos->precoOriginal($produto) > $precos->preco($produto))
                                             <p class="text-xs text-gray-400 line-through">
-                                                R$ {{ number_format($produto->original_price, 2, ',', '.') }}
+                                                R$ {{ number_format($precos->precoOriginal($produto), 2, ',', '.') }}
                                             </p>
                                         @endif
                                     @else

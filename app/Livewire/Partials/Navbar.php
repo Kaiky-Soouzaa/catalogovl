@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Services\PrecoCliente;
 
 class Navbar extends Component
 {
@@ -84,21 +85,27 @@ class Navbar extends Component
             ->where('session_id', session()->getId())
             ->first();
 
-        // Quantidade de produtos DIFERENTES (não a soma das unidades)
-        $this->totalItens = $cart ? $cart->items->count() : 0;
-        $this->totalValor = $cart ? $cart->items->sum(fn($i) => $i->product->price * $i->quantity) : 0;
+        // Ignora itens cujo produto foi apagado
+        $itens = $cart ? $cart->items->filter(fn($i) => $i->product) : collect();
 
-        $this->cartItensDetalhe = $cart
-            ? $cart->items->map(fn($item) => [
-                'product_id' => $item->product_id,
-                'name'       => $item->product->name,
-                'category'   => $item->product->category->name ?? null,
-                'price'      => $item->product->price,
-                'quantity'   => $item->quantity,
-                'image'      => is_array($item->product->images) ? ($item->product->images[0] ?? null) : null,
-                'note'       => $item->note,
-            ])->toArray()
-            : [];
+        $precos = PrecoCliente::para(Auth::guard('cliente')->user());
+
+        // Quantidade de produtos DIFERENTES (não a soma das unidades)
+        $this->totalItens = $itens->count();
+        $this->totalValor = round(
+            $itens->sum(fn($i) => $precos->preco($i->product) * $i->quantity),
+            2
+        );
+
+        $this->cartItensDetalhe = $itens->map(fn($item) => [
+            'product_id' => $item->product_id,
+            'name'       => $item->product->name,
+            'category'   => $item->product->category->name ?? null,
+            'price'      => $precos->preco($item->product),
+            'quantity'   => $item->quantity,
+            'image'      => is_array($item->product->images) ? ($item->product->images[0] ?? null) : null,
+            'note'       => $item->note,
+        ])->values()->toArray();
     }
 
     public function abrirCarrinho(): void
@@ -204,7 +211,8 @@ class Navbar extends Component
         }
 
         $clienteLogado = $this->clienteLogado();
+        $precos = PrecoCliente::para($clienteLogado ? Auth::guard('cliente')->user() : null);
 
-        return view('livewire.partials.navbar', compact('tenant', 'categorias', 'resultados', 'clienteLogado'));
+        return view('livewire.partials.navbar', compact('tenant', 'categorias', 'resultados', 'clienteLogado', 'precos'));
     }
 }

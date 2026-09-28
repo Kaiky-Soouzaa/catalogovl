@@ -8,6 +8,7 @@ use App\Models\Cliente;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
+use App\Services\PrecoCliente;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Locked;
@@ -84,10 +85,17 @@ class CheckoutPage extends Component
             ->where('session_id', session()->getId())
             ->first();
 
-        $this->cartItems = $cart ? $cart->items->load('product') : collect();
+        // Ignora itens cujo produto foi apagado
+        $this->cartItems = $cart
+            ? $cart->items->load('product')->filter(fn($i) => $i->product)
+            : collect();
 
-        // Quando existir preço por cliente, é aqui que ele entra
-        $this->total = $this->cartItems->sum(fn($i) => $i->product->price * $i->quantity);
+        $precos = PrecoCliente::para($this->clienteAtual());
+
+        $this->total = round(
+            $this->cartItems->sum(fn($i) => $precos->preco($i->product) * $i->quantity),
+            2
+        );
     }
 
     protected function regrasEntrega(): array
@@ -156,7 +164,9 @@ class CheckoutPage extends Component
             'metodoPagamento' => 'required|in:pix,cartao,dinheiro',
         ]);
 
-        $order = DB::transaction(function () use ($cliente) {
+        $precos = PrecoCliente::para($cliente);
+
+        $order = DB::transaction(function () use ($cliente, $precos) {
             $order = new Order([
                 'user_id'          => $this->tenant->id,
                 'session_id'       => session()->getId(),
@@ -178,12 +188,14 @@ class CheckoutPage extends Component
             $order->save();
 
             foreach ($this->cartItems as $item) {
+                $unitario = $precos->preco($item->product);
+
                 OrderItem::create([
                     'order_id'     => $order->id,
                     'product_id'   => $item->product_id,
                     'quantity'     => $item->quantity,
-                    'unit_amount'  => $item->product->price,
-                    'total_amount' => $item->product->price * $item->quantity,
+                    'unit_amount'  => $unitario,
+                    'total_amount' => round($unitario * $item->quantity, 2),
                     'note'         => $item->note,
                 ]);
             }
@@ -204,12 +216,6 @@ class CheckoutPage extends Component
 
             return $order;
         });
-
-        // Mantido enquanto a OrdersPage ainda lista pedidos pela sessão
-        session()->put('last_order_' . $this->tenant->id, $order->id);
-        $pedidos = session()->get('orders_' . $this->tenant->id, []);
-        $pedidos[] = $order->id;
-        session()->put('orders_' . $this->tenant->id, $pedidos);
 
         $this->redirect(url($this->tenant->slug . '/pedido/' . $order->id));
     }

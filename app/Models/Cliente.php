@@ -35,4 +35,9 @@ class Cliente extends Authenticatable
     {
         return $this->belongsTo(User::class, 'tenant_id');
     }
+
+    public function precos()
+    {
+        return $this->hasMany(ClientePreco::class);
+    }
 }

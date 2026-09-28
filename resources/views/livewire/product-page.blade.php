@@ -36,15 +36,15 @@
             <h1 class="text-base font-bold text-gray-900 uppercase">{{ $product->name }}</h1>
             <div class="flex items-center gap-2 mt-1">
                 <p class="text-lg font-bold" style="color: {{ $tenant->primary_color ?? '#00b050' }}">
-                    R$ {{ number_format($product->price, 2, ',', '.') }}
+                    R$ {{ number_format($precos->preco($product), 2, ',', '.') }}
                 </p>
-                @if ($product->original_price)
+                @if ($precos->precoOriginal($product) && $precos->precoOriginal($product) > $precos->preco($product))
                     <p class="text-sm text-gray-400 line-through">
-                        R$ {{ number_format($product->original_price, 2, ',', '.') }}
+                        R$ {{ number_format($precos->precoOriginal($product), 2, ',', '.') }}
                     </p>
                     <span class="text-xs font-bold text-white px-1.5 py-0.5 rounded-lg"
                         style="background-color: {{ $tenant->primary_color ?? '#00b050' }}">
-                        -{{ $product->discount_percentage }}%
+                        -{{ $precos->desconto($product) }}%
                     </span>
                 @endif
             </div>
@@ -90,7 +90,7 @@
                 <div>
                     <p class="text-xs text-gray-400">Total</p>
                     <p class="text-base font-bold text-gray-900">
-                        R$ {{ number_format($product->price * $quantity, 2, ',', '.') }}
+                        R$ {{ number_format($precos->preco($product) * $quantity, 2, ',', '.') }}
                     </p>
                 </div>
                 <button wire:click="adicionar"

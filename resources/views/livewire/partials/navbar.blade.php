@@ -71,13 +71,17 @@
                                     </div>
 
                                     @if ($clienteLogado)
+                                        @php
+                                            $precoFinal = $precos->preco($produto);
+                                            $precoOriginal = $precos->precoOriginal($produto);
+                                        @endphp
                                         <div class="text-right flex-shrink-0">
                                             <p class="text-sm font-bold" style="color: {{ $primaryColor }}">
-                                                R$ {{ number_format($produto->price, 2, ',', '.') }}
+                                                R$ {{ number_format($precoFinal, 2, ',', '.') }}
                                             </p>
-                                            @if ($produto->original_price)
+                                            @if ($precoOriginal && $precoOriginal > $precoFinal)
                                                 <p class="text-xs text-gray-400 line-through">
-                                                    R$ {{ number_format($produto->original_price, 2, ',', '.') }}
+                                                    R$ {{ number_format($precoOriginal, 2, ',', '.') }}
                                                 </p>
                                             @endif
                                         </div>

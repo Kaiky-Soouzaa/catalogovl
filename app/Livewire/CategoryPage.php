@@ -8,6 +8,7 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use App\Services\PrecoCliente;
 
 class CategoryPage extends Component
 {
@@ -152,8 +153,9 @@ class CategoryPage extends Component
             ->get();
 
         $clienteLogado = $this->clienteLogado();
+        $precos = PrecoCliente::para($clienteLogado ? Auth::guard('cliente')->user() : null);
 
-        return view('livewire.category-page', compact('produtos', 'clienteLogado'))
+        return view('livewire.category-page', compact('produtos', 'clienteLogado', 'precos'))
             ->layout('components.layouts.checkout', ['tenant' => $this->tenant]);
     }
 }
