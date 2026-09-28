@@ -55,7 +55,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
         </a>
-        <h1 class="text-base font-bold text-gray-800">Detalhes do pedido</h1>
+        {{-- <h1 class="text-base font-bold text-gray-800">Detalhes do pedido</h1> --}}
     </div>
 
     <div class="max-w-lg mx-auto px-4 py-4 space-y-3">
