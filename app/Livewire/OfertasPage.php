@@ -157,6 +157,6 @@ class OfertasPage extends Component
             ->when($clienteLogado, fn($c) => $c->filter(fn($p) => $precos->emOferta($p))->values());
 
         return view('livewire.ofertas-page', compact('produtos', 'clienteLogado', 'precos'))
-            ->layout('components.layouts.checkout', ['tenant' => $this->tenant]);
+            ->layout('components.layouts.checkout', ['tenant' => $this->tenant, 'title' => 'Ofertas']);
     }
 }

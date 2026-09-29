@@ -104,14 +104,14 @@
                     </a>
                 </div>
 
-                <div class="flex gap-3">
-                    @foreach ($produtosOferta->take(2) as $produto)
+                <div class="flex flex-nowrap overflow-hidden">
+                    @foreach ($produtosOferta->take(6) as $produto)
                         @php
                             $imagens = is_array($produto->images) ? $produto->images : [];
                             $img = $imagens[0] ?? null;
                         @endphp
 
-                        <div class="flex-shrink-0 w-40 p-3 cursor-pointer flex flex-col"
+                        <div class="flex-shrink-0 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6 p-3 cursor-pointer flex flex-col"
                             @if ($clienteLogado) onclick="window.location='{{ url($tenant->slug . '/produto/' . $produto->slug) }}'"
                             @else
                                 onclick="Livewire.dispatch('abrir-modal-login')" @endif>
@@ -241,14 +241,14 @@
                         </a>
                     </div>
 
-                    <div class="flex gap-3">
-                        @foreach ($categoria->products->take(2) as $produto)
+                    <div class="flex flex-nowrap overflow-hidden">
+                        @foreach ($categoria->products->take(6) as $produto)
                             @php
                                 $imagens = is_array($produto->images) ? $produto->images : [];
                                 $img = $imagens[0] ?? null;
                             @endphp
 
-                            <div class="flex-shrink-0 w-40 p-3 cursor-pointer flex flex-col"
+                            <div class="flex-shrink-0 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6 p-3 cursor-pointer flex flex-col"
                                 @if ($clienteLogado) onclick="window.location='{{ url($tenant->slug . '/produto/' . $produto->slug) }}'"
                                 @else
                                     onclick="Livewire.dispatch('abrir-modal-login')" @endif>
