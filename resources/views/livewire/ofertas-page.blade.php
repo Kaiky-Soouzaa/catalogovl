@@ -6,14 +6,14 @@
 <div class="bg-gray-50 min-h-screen pb-24">
 
     {{-- Topo com voltar --}}
-    <div class="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3">
+    {{-- <div class="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3">
         <a href="{{ url($tenant->slug) }}" class="text-gray-600">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
         </a>
         <h1 class="text-base font-bold text-gray-800">Ofertas</h1>
-    </div>
+    </div> --}}
 
     {{-- Breadcrumb --}}
     <div class="px-4 py-4">

@@ -6,14 +6,14 @@
 <div class="bg-gray-50 min-h-screen pb-24">
 
     {{-- Topo com voltar --}}
-    <div class="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3">
+    {{-- <div class="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3">
         <a href="{{ url($tenant->slug) }}" class="text-gray-600">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
         </a>
         <h1 class="text-base font-bold text-gray-800">{{ $categoria->name }}</h1>
-    </div>
+    </div> --}}
 
     {{-- Breadcrumb --}}
     <div class="px-4 py-4">
@@ -76,8 +76,7 @@
                                 <div class="relative z-10 flex justify-end mt-1 mb-1" x-data="{ show: false, timer: null }">
                                     <div x-show="show" x-transition
                                         class="flex items-center gap-1 rounded-full text-white shadow-md px-1 py-1"
-                                        style="background-color: {{ $primaryColor }}"
-                                        onclick="event.stopPropagation()">
+                                        style="background-color: {{ $primaryColor }}" onclick="event.stopPropagation()">
                                         <button wire:click.stop="decrementarHome({{ $produto->id }})"
                                             x-on:click="clearTimeout(timer); timer = setTimeout(() => show = false, 2000)"
                                             class="w-7 h-7 flex items-center justify-center cursor-pointer">
