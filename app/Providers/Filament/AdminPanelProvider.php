@@ -32,7 +32,7 @@ class AdminPanelProvider extends PanelProvider
 
 
             ->login()
-            ->brandLogo(asset('assets/images/vl-sistemas.png'))
+            ->brandLogo(asset('assets/images/vl-sistemas.jpeg'))
             ->brandLogoHeight('3rem')
 
             ->colors([

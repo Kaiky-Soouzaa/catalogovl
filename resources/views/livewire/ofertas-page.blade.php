@@ -1,6 +1,6 @@
 @php
     $primaryColor = $tenant->primary_color ?? '#00b050';
-    $logoUrl = $tenant->logo_url ? Storage::url($tenant->logo_url) : asset('assets/images/vl-sistemas.png');
+
 @endphp
 
 <div class="bg-gray-50 min-h-screen pb-24">
@@ -148,6 +148,5 @@
         </div>
     </div>
 
-    {{-- Modal de login (esta página usa layout sem navbar, então o modal precisa estar aqui) --}}
-    <livewire:auth-modal :tenant-id="$tenant->id" :primary-color="$primaryColor" :logo-url="$logoUrl" />
+
 </div>

@@ -108,7 +108,7 @@
             <div class="login-left">
 
                 <div style="margin-bottom:20px; display: flex; justify-content: center; align-items: center">
-                    <img src="{{ asset('assets/images/vl-sistemas.png') }}" style="height:56px;">
+                    <img src="{{ asset('assets/images/vl-sistemas.jpeg') }}" style="height:56px;">
                 </div>
 
                 <p style="text-align:center; color:#8687a7; margin-bottom:25px;">

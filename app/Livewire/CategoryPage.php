@@ -156,6 +156,6 @@ class CategoryPage extends Component
         $precos = PrecoCliente::para($clienteLogado ? Auth::guard('cliente')->user() : null);
 
         return view('livewire.category-page', compact('produtos', 'clienteLogado', 'precos'))
-            ->layout('components.layouts.checkout', ['tenant' => $this->tenant, 'title' => $this->categoria->name]);
+            ->layout('components.layouts.app', ['tenant' => $this->tenant, 'title' => $this->categoria->name]);
     }
 }

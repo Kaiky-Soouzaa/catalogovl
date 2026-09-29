@@ -1,7 +1,7 @@
 @php
     $primaryColor = $tenant?->primary_color ?? '#d97706';
     $tenantId = $tenant?->id;
-    $logoUrl = $tenant?->logo_url ? Storage::url($tenant->logo_url) : asset('assets/images/vl-sistemas.png');
+    $logoUrl = $tenant?->logo_url ? Storage::url($tenant->logo_url) : asset('assets/images/vl-sistemas.jpeg');
 @endphp
 
 <div>

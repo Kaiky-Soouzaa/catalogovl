@@ -1,6 +1,6 @@
 @php
     $primaryColor = $tenant->primary_color ?? '00b050';
-    $logo = $tenant->logo_url ? Storage::url($tenant->logo_url) : asset('assets/images/vl-sistemas.png');
+    $logo = $tenant->logo_url ? Storage::url($tenant->logo_url) : asset('assets/images/vl-sistemas.jpeg');
 
 @endphp
 
